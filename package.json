@@ -9,7 +9,7 @@
         "url": "https://github.com/mt-typescript/util.git"
     },
     "license": "MIT",
-    "version": "1.0.21",
+    "version": "1.0.22",
     "description": "",
     "main": "lib",
     "types": "lib-esm",
