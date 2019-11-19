@@ -1,0 +1,27 @@
+{
+    "compilerOptions": {
+        "allowSyntheticDefaultImports": true,
+        "allowJs": false,
+        "declaration": true,
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "baseUrl": ".",
+        "lib": [
+            "es2017",
+            "dom"
+        ],
+        "module": "umd",
+        "moduleResolution": "node",
+        "sourceMap": true,
+        // "target": "es2015",
+        "target": "es5",
+        "traceResolution": false,
+        "outDir": "lib"
+    },
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "node_modules"
+    ]
+}

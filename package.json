@@ -1,0 +1,54 @@
+{
+    "name": "@upradata/util",
+    "author": {
+        "name": "Thomas Milotti",
+        "email": "thomas.milotti@gmail.com",
+        "url": "https://github.com/milottit"
+    },
+    "repository": {
+        "url": "https://github.com/mt-typescript/util.git"
+    },
+    "license": "MIT",
+    "version": "1.0.21",
+    "description": "",
+    "main": "lib",
+    "types": "lib-esm",
+    "module": "lib-esm",
+    "scripts": {
+        "test": "npx jest --verbose false --config jest-ut.config.js",
+        "e2e": "npx jest --passWithNoTests --verbose false --config jest-e2e.config.js",
+        "clean": "shx rm -rf lib lib-esm",
+        "prebuild": "npm run clean",
+        "build": "npm run run clean && tsc && tsc -m es6 --outDir lib-esm",
+        "postbuild": "npm run test && npm run e2e",
+        "build:watch": "npm run tsc -w",
+        "github-push": "npm run build && npm version patch && git push && git push --tags",
+        "npm-publish": "npm run build && npm publish --access public"
+    },
+    "files": [
+        "lib",
+        "lib-esm"
+    ],
+    "devDependencies": {
+        "@types/jest": "^24.0.17",
+        "@types/node": "^12.6.9",
+        "jest": "^24.8.0",
+        "shx": "^0.3.2",
+        "ts-jest": "^24.0.2",
+        "ts-node": "^8.3.0",
+        "tsconfig-paths": "^3.8.0",
+        "tslint": "^5.10.0",
+        "typescript": "^3.3.3333"
+    },
+    "dependencies": {
+        "rxjs": "^6.3.3",
+        "ts-util-is": "^1.1.3"
+    },
+    "keywords": [
+        "typescript",
+        "util"
+    ],
+    "publishConfig": {
+        "access": "public"
+    }
+}
