@@ -34,3 +34,11 @@ export type PartialRecursive<T> = {
     T[ K ] extends object ? PartialRecursive<T[ K ]> :
     T[ K ];
 };
+
+
+export type Function0<R> = () => R;
+export type Function1<Arg1, R> = (arg1: Arg1) => R;
+export type Function2<Arg1, Arg2, R> = (arg1: Arg1, arg2: Arg2) => R;
+export type Function3<Arg1, Arg2, Arg3, R> = (arg1: Arg1, arg2: Arg2, arg3: Arg3) => R;
+export type Function4<Arg1, Arg2, Arg3, Arg4, R> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4) => R;
+export type Function5<Arg1, Arg2, Arg3, Arg4, Arg5, R> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4, arg5: Arg5) => R;
