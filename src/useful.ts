@@ -1,14 +1,5 @@
-export * from './assign';
-export * from './is';
-export * from './boolean-attribute';
-export * from './observable-subscribe-once';
-export * from './guid';
-export * from './execute-temporary-state';
-
-// export * from './node-util';
-// export * from './path-normalize';
-
-
+import findUp from 'find-up';
+import path from 'path';
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
     try {
@@ -23,3 +14,10 @@ export function chain<T>(exp: () => T, defaultValue: T = undefined) {
     }
     return defaultValue;
 }
+
+
+export const findUpDir = (file: string) => findUp.sync(directory => {
+    const hasPackageJson = findUp.sync.exists(path.join(directory, file));
+    return hasPackageJson && directory;
+}, { type: 'directory' });
+
