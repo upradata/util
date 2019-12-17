@@ -55,7 +55,7 @@ describe('Test Suite ExecuteOnTempState', () => {
     });
 
     it('Test constructor/state/from-to', () => {
-        const e1 = new ExecuteOnTempState({ obj: o, tmpState }) as any as { obj: PlainObj, tmpState: PlainObj };
+        const e1 = new ExecuteOnTempState({ obj: o, tmpState }) as any as { obj: PlainObj, tmpState: PlainObj; };
         const e2 = new ExecuteOnTempState().state({ obj: o, tmpState });
         const e3 = new ExecuteOnTempState().from(o).to(tmpState);
         const e4 = temp(o).to(tmpState);

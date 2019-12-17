@@ -20,4 +20,3 @@ export const findUpDir = (file: string) => findUp.sync(directory => {
     const hasPackageJson = findUp.sync.exists(path.join(directory, file));
     return hasPackageJson && directory;
 }, { type: 'directory' });
-
