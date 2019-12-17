@@ -33,7 +33,7 @@
       "args": ["--runInBand", "--verbose", "false", "--config", "${workspaceFolder}/jest-ut.config.js"],
       "cwd": "${workspaceFolder}",
       "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
+      "internalConsoleOptions": "openOnFirstSessionStart",
       "disableOptimisticBPs": true
     },
     {

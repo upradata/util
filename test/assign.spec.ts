@@ -117,9 +117,14 @@ describe('Test Suite AssignRecursive', () => {
     });
 
     it('should merge only only existing properties', () => {
-        const merge = assignRecursiveArray({ a: 1, b: 2 }, [ o2 ], { onlyExistingProp: true });
-        const expectedMerge = { a: 1, b: 3 };
+        const merge = assignRecursiveArray({ a: 1, b: 4, c: { c11: { c111: 1 }, c12: 2, c13: { c22: 1 } } }, [ o1 ], { onlyExistingProp: true });
+        const expectedMerge = { a: 1, b: 2, c: { c11: 11, c12: 12, c13: { c22: 22 } } };
         expect(merge).toEqual(expectedMerge);
     });
 
+    it('should merge only only properties', () => {
+        const merge = assignRecursiveArray(o, [ o1, o2 ], { props: [ 'a', 'b', 'c.c12', 'c.c13.c22', 'd' ] });
+        const expectedMerge = { a: 1, b: 3, c: { c12: 12, c13: { c22: 100, }, }, d: 3, e: 5 };
+        expect(merge).toEqual(expectedMerge);
+    });
 });

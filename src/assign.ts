@@ -1,5 +1,6 @@
 
 import { PlainObj, PartialRecursive } from './type';
+import { isDefined } from './is';
 
 
 export type AssignMode = 'of' | 'in';
@@ -10,6 +11,7 @@ export class AssignOptions {
     arrayMode?: ArrayMode = 'merge';
     depth?: number = NaN;
     onlyExistingProp?: boolean = false;
+    props?: (string | symbol)[];
 
     constructor(options: Partial<AssignOptions>) {
         Object.assign(this, options);
@@ -21,6 +23,7 @@ export class AssignOptions {
 class Assign {
 
     private options: AssignOptions;
+    private currentlevel: number;
 
     constructor(private out: PlainObj, private ins: PlainObj[], options?: AssignOptions) {
         this.options = new AssignOptions(options);
@@ -36,16 +39,42 @@ class Assign {
 
     private assignProp(prop: string, to: any, from: any) {
         const getFrom = () => typeof from === 'function' ? from() : from[ prop ];
+        const { onlyExistingProp, props } = this.options;
 
-        if (this.options.onlyExistingProp) {
-            if (typeof to[ prop ] !== 'undefined')
+        if (onlyExistingProp) {
+            if (isDefined(to[ prop ]))
+                to[ prop ] = getFrom();
+        } else if (props) {
+            const property = this.dotProp(prop);
+            if (isDefined(property))
                 to[ prop ] = getFrom();
         } else {
             to[ prop ] = getFrom();
         }
     }
 
-    assignRecursive() {
+    private dotProp(property: string) {
+        let foundProp: string = undefined;
+
+        for (const p of this.options.props) {
+            let prop = p;
+
+            if (typeof p === 'string')
+                prop = p.split('.')[ this.currentlevel ];
+
+            // console.log({ property, p, level: this.currentlevel, prop, pass: prop === property });
+            if (prop === property) {
+                foundProp = prop;
+                break;
+            }
+        }
+
+        return foundProp;
+    }
+
+    assignRecursive(currentLevel: number = 0) {
+        this.currentlevel = currentLevel;
+
         const { out, ins } = this;
         const { assignMode, arrayMode, depth } = this.options;
 
@@ -68,7 +97,7 @@ class Assign {
 
                             this.assignProp(prop,
                                 to,
-                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], option).assignRecursive(),
+                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], option).assignRecursive(currentLevel + 1),
                             );
                         }
                     } else
