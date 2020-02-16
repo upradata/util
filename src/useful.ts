@@ -1,5 +1,5 @@
-import findUp from 'find-up';
-import path from 'path';
+import { isArray, isDefined } from './is';
+
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
     try {
@@ -9,14 +9,33 @@ export function chain<T>(exp: () => T, defaultValue: T = undefined) {
         } */
         return exp();
     } catch (e) {
-        if (!(e instanceof ReferenceError || e instanceof TypeError))
+        if (!(isErrorOf(e, ReferenceError) || isErrorOf(e, TypeError)))
             throw e;
     }
     return defaultValue;
 }
 
 
-export const findUpDir = (file: string) => findUp.sync(directory => {
-    const hasPackageJson = findUp.sync.exists(path.join(directory, file));
-    return hasPackageJson && directory;
-}, { type: 'directory' });
+export function isErrorOf(e: any, errorCtor: (...args: []) => any) {
+    return e instanceof errorCtor || e.constructor === errorCtor || e.name === errorCtor.name;
+}
+
+export function ensureArray<T>(v: T | T[]): T[] {
+    return isArray(v) ? v : isDefined(v) ? [ v ] : [];
+}
+
+
+type StringType = { toString(): string; };
+export type StringTemplateTranformer = (strings: TemplateStringsArray, ...keys: StringType[]) => string;
+
+export function sPipe(...transformers: StringTemplateTranformer[]) {
+    return (strings: TemplateStringsArray, ...keys: StringType[]) => {
+        let s: string = transformers[ 0 ](strings, ...keys);
+
+        for (const transformer of transformers.slice(1)) {
+            s = transformer`${s}`;
+        }
+
+        return s;
+    };
+}

@@ -9,3 +9,4 @@ export * from './type';
 export * from './camelcase';
 export * from './random';
 export * from './json';
+export * from './codified-error';

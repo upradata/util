@@ -1,10 +1,11 @@
 
 import { PlainObj, PartialRecursive } from './type';
 import { isDefined } from './is';
+import { isUndefined } from 'ts-util-is';
 
 
 export type AssignMode = 'of' | 'in';
-export type ArrayMode = 'merge' | 'replace';
+export type ArrayMode = 'merge' | 'replace' | 'concat';
 
 export class AssignOptions {
     assignMode?: AssignMode = 'of';
@@ -12,10 +13,16 @@ export class AssignOptions {
     depth?: number = NaN;
     onlyExistingProp?: boolean = false;
     props?: (string | symbol)[];
+    except?: (string | symbol)[];
+    isOption?: boolean = true;
 
     constructor(options: Partial<AssignOptions>) {
         Object.assign(this, options);
     }
+}
+
+function isAssignOptions(v: any): v is AssignOptions {
+    return v instanceof AssignOptions || v.isOption === true;
 }
 
 
@@ -39,24 +46,36 @@ class Assign {
 
     private assignProp(prop: string, to: any, from: any) {
         const getFrom = () => typeof from === 'function' ? from() : from[ prop ];
-        const { onlyExistingProp, props } = this.options;
+        const { onlyExistingProp, props, except } = this.options;
+
+        if (except) {
+            const property = this.findDotProp(prop, except) as string;
+            if (isDefined(property) && property.split('.').pop() === prop)
+                return;
+        }
 
         if (onlyExistingProp) {
             if (isDefined(to[ prop ]))
                 to[ prop ] = getFrom();
+
         } else if (props) {
-            const property = this.dotProp(prop);
+            const property = this.findDotProp(prop, props);
+
             if (isDefined(property))
                 to[ prop ] = getFrom();
+
         } else {
             to[ prop ] = getFrom();
         }
     }
 
-    private dotProp(property: string) {
-        let foundProp: string = undefined;
+    private findDotProp(property: string, props: (string | symbol)[]) {
+        if (isUndefined(props))
+            return undefined;
 
-        for (const p of this.options.props) {
+        let foundProp: (string | symbol) = undefined;
+
+        for (const p of props) {
             let prop = p;
 
             if (typeof p === 'string')
@@ -64,7 +83,7 @@ class Assign {
 
             // console.log({ property, p, level: this.currentlevel, prop, pass: prop === property });
             if (prop === property) {
-                foundProp = prop;
+                foundProp = p;
                 break;
             }
         }
@@ -89,9 +108,17 @@ class Assign {
                 if (assignMode === 'of' && inn.hasOwnProperty(prop) || assignMode === 'in') {
                     // recursion
                     if (this.isObjectOrArray(inn[ prop ]) && !this.lastLevel()) { // array also
-                        if (Array.isArray(inn[ prop ]) && arrayMode === 'replace')
-                            this.assignProp(prop, to, inn);
-                        else {
+                        if (Array.isArray(inn[ prop ]) && arrayMode !== 'merge') {
+                            if (arrayMode === 'replace')
+                                this.assignProp(prop, to, inn);
+                            else { // concat
+                                if (isDefined(to[ prop ]) && !Array.isArray(to[ prop ]))
+                                    throw new Error(`Error while assigning: property ${prop} in ${to} is not an array (concat mode)`);
+
+                                const toArr = isDefined(to[ prop ]) ? to[ prop ] : [];
+                                this.assignProp(prop, to, { [ prop ]: toArr.concat(inn[ prop ]) });
+                            }
+                        } else {
                             const defaultTo = Array.isArray(inn[ prop ]) ? [] : {};
                             const option = { ...this.options, depth: depth - 1 };
 
@@ -136,9 +163,14 @@ export function assignRecursive<T1 extends PlainObj, T2 extends PlainObj,
     T3 extends PlainObj, T4 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4): T1 & T2 & T3 & T4;
 export function assignRecursive<T1 extends PlainObj, T2 extends PlainObj,
     T3 extends PlainObj, T4 extends PlainObj, T5 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4, inn4: T5): T1 & T2 & T3 & T4 & T5;
-export function assignRecursive(out: PlainObj, ...ins: PlainObj[]) {
-    // it is not possible to add a third argument (assignMode?: AssignOption) after an elliptic arg
-    return new Assign(out, ins).assignRecursive();
+export function assignRecursive(out: PlainObj, ...ins: (PlainObj | AssignOptions)[]) {
+
+    if (isAssignOptions(ins[ ins.length - 1 ])) {
+        const options = ins[ ins.length - 1 ];
+        return assignRecursiveArray(out, ins.slice(0, -1) as any, options);
+    }
+
+    return assignRecursiveArray(out, ins as any);
 }
 
 
@@ -163,9 +195,12 @@ export function assignRecursiveIn<T1 extends PlainObj, T2 extends PlainObj,
     T3 extends PlainObj, T4 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4): T1 & T2 & T3 & T4;
 export function assignRecursiveIn<T1 extends PlainObj, T2 extends PlainObj,
     T3 extends PlainObj, T4 extends PlainObj, T5 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4, inn4: T5): T1 & T2 & T3 & T4 & T5;
-export function assignRecursiveIn(out: PlainObj, ...ins: PlainObj[]) {
+export function assignRecursiveIn(out: PlainObj, ...ins: (PlainObj | AssignOptionRed)[]) {
 
-    return new Assign(out, ins, { assignMode: 'in', arrayMode: 'merge' }).assignRecursive();
+    if (isAssignOptions(ins[ ins.length - 1 ]))
+        return assignRecursiveInArray(out, ins.slice(-1) as any, ins[ ins.length - 1 ]);
+
+    return assignRecursiveInArray(out, ins as any);
 }
 
 
