@@ -44,6 +44,14 @@ export type Function4<Arg1, Arg2, Arg3, Arg4, R = any> = (arg1: Arg1, arg2: Arg2
 export type Function5<Arg1, Arg2, Arg3, Arg4, Arg5, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4, arg5: Arg5) => R;
 
 
+export type Constructor<P = any, I = object> = new (...input: P[]) => I;
+export type Constructor1<P1, I = object> = new (p1: P1) => I;
+export type Constructor2<P1, P2, I = object> = new (p1: P1, p2: P2) => I;
+export type Constructor3<P1, P2, P3, I = object> = new (p1: P1, p2: P2, p3: P3) => I;
+export type Constructor4<P1, P2, P3, P4, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4) => I;
+export type Constructor5<P1, P2, P3, P4, P5, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4, p5: P5) => I;
+
+
 export type TT$<K> = K | Promise<K>;
 
 export type BuildType<Types, T> = {

@@ -10,3 +10,4 @@ export * from './camelcase';
 export * from './random';
 export * from './json';
 export * from './codified-error';
+export * from './mixin';

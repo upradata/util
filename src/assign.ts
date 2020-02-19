@@ -12,8 +12,8 @@ export class AssignOptions {
     arrayMode?: ArrayMode = 'merge';
     depth?: number = NaN;
     onlyExistingProp?: boolean = false;
-    props?: (string | symbol)[];
-    except?: (string | symbol)[];
+    props?: (string | symbol)[] = undefined;
+    except?: (string | symbol)[] = undefined;
     isOption?: boolean = true;
 
     constructor(options: Partial<AssignOptions>) {
@@ -22,7 +22,7 @@ export class AssignOptions {
 }
 
 function isAssignOptions(v: any): v is AssignOptions {
-    return v instanceof AssignOptions || v.isOption === true;
+    return isDefined(v) && (v instanceof AssignOptions || v.isOption === true);
 }
 
 
@@ -55,7 +55,7 @@ class Assign {
         }
 
         if (onlyExistingProp) {
-            if (isDefined(to[ prop ]))
+            if (prop in to)
                 to[ prop ] = getFrom();
 
         } else if (props) {
