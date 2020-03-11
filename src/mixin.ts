@@ -1,4 +1,4 @@
-import { Constructor } from './type';
+import { Constructor, AnyFunction } from './type';
 
 // =====> https://github.com/bryntum/chronograph/blob/master/src/class/Mixin.ts <=====
 
@@ -38,7 +38,6 @@ export type BaseAnyConstructor = typeof Base;
 
 
 // ---------------------------------------------------------------------------------------------------------------------
-export type AnyFunction<A = any> = (...input: any[]) => A;
 export type AnyConstructor<A> = Constructor<any, A>;
 
 // ---------------------------------------------------------------------------------------------------------------------

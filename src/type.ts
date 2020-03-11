@@ -42,6 +42,7 @@ export type Function2<Arg1, Arg2, R = any> = (arg1: Arg1, arg2: Arg2) => R;
 export type Function3<Arg1, Arg2, Arg3, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3) => R;
 export type Function4<Arg1, Arg2, Arg3, Arg4, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4) => R;
 export type Function5<Arg1, Arg2, Arg3, Arg4, Arg5, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4, arg5: Arg5) => R;
+export type AnyFunction<R = any> = (...args: any[]) => R;
 
 
 export type Constructor<P = any, I = object> = new (...input: P[]) => I;

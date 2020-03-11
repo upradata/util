@@ -7,17 +7,29 @@ import { isUndefined } from 'ts-util-is';
 export type AssignMode = 'of' | 'in';
 export type ArrayMode = 'merge' | 'replace' | 'concat';
 
+export type AssignOpts = Omit<AssignOptions, 'onlyExistingProp'> & { onlyExistingProp?: true | { level: number; }; };
+
 export class AssignOptions {
     assignMode?: AssignMode = 'of';
     arrayMode?: ArrayMode = 'merge';
     depth?: number = NaN;
-    onlyExistingProp?: boolean = false;
+    onlyExistingProp?: { level: number; } = { level: 0 };
     props?: (string | symbol)[] = undefined;
     except?: (string | symbol)[] = undefined;
+    transform?: (key: string | symbol, value: any) => any = undefined;
     isOption?: boolean = true;
 
-    constructor(options: Partial<AssignOptions>) {
-        Object.assign(this, options);
+    constructor(options: AssignOpts) {
+        const opts = { ...options };
+
+        if (typeof opts.onlyExistingProp === 'boolean') {
+            if (!opts.onlyExistingProp)
+                throw new Error(`onlyExistingProp option has to be true or { level: number }`);
+
+            opts.onlyExistingProp = { level: Infinity };
+        }
+
+        Object.assign(this, opts);
     }
 }
 
@@ -45,8 +57,12 @@ class Assign {
     }
 
     private assignProp(prop: string, to: any, from: any) {
-        const getFrom = () => typeof from === 'function' ? from() : from[ prop ];
-        const { onlyExistingProp, props, except } = this.options;
+        const { onlyExistingProp, props, except, transform } = this.options;
+
+        const getFrom = () => {
+            const v = typeof from === 'function' ? from() : from[ prop ];
+            return isDefined(transform) ? transform(prop, v) : v;
+        };
 
         if (except) {
             const property = this.findDotProp(prop, except) as string;
@@ -54,7 +70,7 @@ class Assign {
                 return;
         }
 
-        if (onlyExistingProp) {
+        if (onlyExistingProp && this.currentlevel < onlyExistingProp.level) {
             if (prop in to)
                 to[ prop ] = getFrom();
 
@@ -81,7 +97,6 @@ class Assign {
             if (typeof p === 'string')
                 prop = p.split('.')[ this.currentlevel ];
 
-            // console.log({ property, p, level: this.currentlevel, prop, pass: prop === property });
             if (prop === property) {
                 foundProp = p;
                 break;
@@ -97,7 +112,7 @@ class Assign {
         const { out, ins } = this;
         const { assignMode, arrayMode, depth } = this.options;
 
-        const to = typeof (out) === 'object' ? out : {}; //  Object(out);
+        const to = typeof out === 'object' ? out : {}; //  Object(out);
 
         for (const inn of ins) {
             if (inn === undefined || inn === null)

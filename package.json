@@ -13,10 +13,9 @@
     "description": "",
     "main": "lib",
     "types": "lib",
-    "module": "lib-esm",
+    "module": "lib",
     "files": [
-        "lib",
-        "lib-esm"
+        "lib"
     ],
     "scripts": {
         "test": "npx jest --verbose false --config jest-ut.config.js",

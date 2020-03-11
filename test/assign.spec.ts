@@ -73,8 +73,19 @@ describe('Test Suite AssignRecursive', () => {
         const o1 = { b: [ 51, 52 ], d: { d1: [ 21, 22, 23, 24 ] } };
         const o2 = { a: 1, c: { c1: [ 10 ] }, d: { d1: [ 220, 221 ] } };
 
-        const merge = assignRecursiveArray(o, [ o1, o2 ], { arrayMode: 'replace' });
+        const merge = assignRecursive(o, o1, o2, { isOption: true, arrayMode: 'replace' });
         const mergeExpected = { a: 1, b: [ 51, 52 ], c: { c1: [ 10 ] }, d: { d1: [ 220, 221 ] } };
+
+        expect(merge).toEqual(mergeExpected);
+    });
+
+    it('should concat arrays', () => {
+        const o = { a: 1, b: [ 1, 2, 3, 4 ], c: { c1: [ 4, 5 ] } };
+        const o1 = { b: [ 51, 52 ], d: { d1: [ 21, 22, 23, 24 ] } };
+        const o2 = { a: 1, c: { c1: [ 10 ] }, d: { d1: [ 220, 221 ] } };
+
+        const merge = assignRecursiveArray(o, [ o1, o2 ], { arrayMode: 'concat' });
+        const mergeExpected = { a: 1, b: [ 1, 2, 3, 4, 51, 52 ], c: { c1: [ 4, 5, 10 ] }, d: { d1: [ 21, 22, 23, 24, 220, 221 ] } };
 
         expect(merge).toEqual(mergeExpected);
     });
@@ -116,15 +127,25 @@ describe('Test Suite AssignRecursive', () => {
         expect(merge).toEqual(mergeExpected);
     });
 
-    it('should merge only only existing properties', () => {
-        const merge = assignRecursiveArray({ a: 1, b: 4, c: { c11: { c111: 1 }, c12: 2, c13: { c22: 1 } } }, [ o1 ], { onlyExistingProp: true });
+    it('should merge only existing properties', () => {
+        const merge = assignRecursive({ a: 1, b: 4, c: { c11: { c111: 1 }, c12: 2, c13: { c22: 1 } } }, o1, { isOption: true, onlyExistingProp: true });
         const expectedMerge = { a: 1, b: 2, c: { c11: 11, c12: 12, c13: { c22: 22 } } };
         expect(merge).toEqual(expectedMerge);
     });
 
-    it('should merge only only properties', () => {
-        const merge = assignRecursiveArray(o, [ o1, o2 ], { props: [ 'a', 'b', 'c.c12', 'c.c13.c22', 'd' ] });
+    it('should merge only specified properties', () => {
+        const merge = assignRecursive(o, o1, o2, { isOption: true, props: [ 'a', 'b', 'c.c12', 'c.c13.c22', 'd' ] });
         const expectedMerge = { a: 1, b: 3, c: { c12: 12, c13: { c22: 100, }, }, d: 3, e: 5 };
+        expect(merge).toEqual(expectedMerge);
+    });
+
+    it('should merge all properties except the one specified', () => {
+        o.b = 20;
+        o.d = 40;
+
+        const merge = assignRecursive(o, o1, o2, { isOption: true, except: [ 'a', 'b', 'c.c12', 'c.c13.c22', 'd' ] });
+        const expectedMerge = { b: 20, c: { c11: 50, c13: { c21: 21 }, }, d: 40, e: 5 };
+
         expect(merge).toEqual(expectedMerge);
     });
 });
