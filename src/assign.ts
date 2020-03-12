@@ -7,7 +7,7 @@ import { isUndefined } from 'ts-util-is';
 export type AssignMode = 'of' | 'in';
 export type ArrayMode = 'merge' | 'replace' | 'concat';
 
-export type AssignOpts = Omit<AssignOptions, 'onlyExistingProp'> & { onlyExistingProp?: true | { level: number; }; };
+export type AssignOpts = Omit<AssignOptions, 'onlyExistingProp'> & { onlyExistingProp?: boolean | { level: number; }; };
 
 export class AssignOptions {
     assignMode?: AssignMode = 'of';
@@ -71,6 +71,7 @@ class Assign {
         }
 
         if (onlyExistingProp && this.currentlevel < onlyExistingProp.level) {
+
             if (prop in to)
                 to[ prop ] = getFrom();
 
