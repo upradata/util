@@ -56,7 +56,7 @@ class Assign {
         return typeof e === 'object' && e !== null;
     }
 
-    private assignProp(prop: string, to: any, from: any) {
+    private assignProp(prop: string, to: any, from: any, isFromPrimitive: boolean) {
         const { onlyExistingProp, props, except, transform } = this.options;
 
         const getFrom = () => {
@@ -70,7 +70,7 @@ class Assign {
                 return;
         }
 
-        if (onlyExistingProp && this.currentlevel < onlyExistingProp.level) {
+        if (onlyExistingProp && this.currentlevel < onlyExistingProp.level && !isFromPrimitive) {
 
             if (prop in to)
                 to[ prop ] = getFrom();
@@ -107,13 +107,14 @@ class Assign {
         return foundProp;
     }
 
-    assignRecursive(currentLevel: number = 0) {
+    assignRecursive(currentLevel: number = 0, fromPrimitive: boolean = false) {
         this.currentlevel = currentLevel;
 
         const { out, ins } = this;
         const { assignMode, arrayMode, depth } = this.options;
 
-        const to = typeof out === 'object' ? out : {}; //  Object(out);
+        const to = typeof out === 'object' ? out : {};
+        const isPrimitive = fromPrimitive || typeof out !== 'object';
 
         for (const inn of ins) {
             if (inn === undefined || inn === null)
@@ -126,13 +127,13 @@ class Assign {
                     if (this.isObjectOrArray(inn[ prop ]) && !this.lastLevel()) { // array also
                         if (Array.isArray(inn[ prop ]) && arrayMode !== 'merge') {
                             if (arrayMode === 'replace')
-                                this.assignProp(prop, to, inn);
+                                this.assignProp(prop, to, inn, isPrimitive);
                             else { // concat
                                 if (isDefined(to[ prop ]) && !Array.isArray(to[ prop ]))
                                     throw new Error(`Error while assigning: property ${prop} in ${to} is not an array (concat mode)`);
 
                                 const toArr = isDefined(to[ prop ]) ? to[ prop ] : [];
-                                this.assignProp(prop, to, { [ prop ]: toArr.concat(inn[ prop ]) });
+                                this.assignProp(prop, to, { [ prop ]: toArr.concat(inn[ prop ]) }, isPrimitive);
                             }
                         } else {
                             const defaultTo = Array.isArray(inn[ prop ]) ? [] : {};
@@ -140,12 +141,13 @@ class Assign {
 
                             this.assignProp(prop,
                                 to,
-                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], option).assignRecursive(currentLevel + 1),
+                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], option).assignRecursive(currentLevel + 1, isPrimitive || typeof to[ prop ] !== 'object'),
+                                isPrimitive
                             );
                         }
                     } else
                         // normal case
-                        this.assignProp(prop, to, inn);
+                        this.assignProp(prop, to, inn, isPrimitive);
                 }
             }
         }
