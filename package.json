@@ -10,12 +10,13 @@
     },
     "license": "MIT",
     "version": "1.0.24",
-    "description": "",
+    "description": "Set of typescript util tools",
     "main": "lib",
     "types": "lib",
-    "module": "lib",
+    "module": "lib-esm",
     "files": [
-        "lib"
+        "lib",
+        "lib-esm"
     ],
     "scripts": {
         "test": "npx jest --verbose false --config jest-ut.config.js",
