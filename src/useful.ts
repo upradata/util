@@ -1,4 +1,5 @@
 import { isArray, isDefined } from './is';
+import { ObjectOf } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -39,3 +40,6 @@ export function sPipe(...transformers: StringTemplateTranformer[]) {
         return s;
     };
 }
+
+
+export const entries = <T extends ObjectOf<any>>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
