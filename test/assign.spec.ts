@@ -128,9 +128,46 @@ describe('Test Suite AssignRecursive', () => {
     });
 
     it('should merge only existing properties', () => {
-        const merge = assignRecursive({ a: 1, b: 4, c: { c11: { c111: 1 }, c12: 2, c13: { c22: 1 } } }, o1, { isOption: true, onlyExistingProp: true });
+        const merge1 = assignRecursive({ a: 1, b: 4, c: { c11: { c111: 1 }, c12: 2, c13: { c22: 1 } } }, o1, { isOption: true, onlyExistingProp: true });
         const expectedMerge = { a: 1, b: 2, c: { c11: 11, c12: 12, c13: { c22: 22 } } };
-        expect(merge).toEqual(expectedMerge);
+        expect(merge1).toEqual(expectedMerge);
+
+        const merge2 = assignRecursive({ a: 1, c: 1 }, o1, { isOption: true, onlyExistingProp: true });
+        const expectedMerge2 = { a: 1, c: { c11: 11, c12: 12, c13: { c21: 21, c22: 22 } } };
+        expect(merge2).toEqual(expectedMerge2);
+    });
+
+    it('should merge only existing properties until certain level', () => {
+        const a = () => ({ a1: { a2: { a3: { a4: { a5: 1 } } } } });
+        const b = { b1: { a2: { a3: { a4: { a5: 1 } } } } };
+
+        const merge1 = assignRecursive(a(), b, { isOption: true, onlyExistingProp: { level: 0 } });
+        expect(merge1).toEqual({ ...a(), ...b });
+
+        const merge2 = assignRecursive(a(), b, { isOption: true, onlyExistingProp: true });
+        expect(merge2).toEqual(a());
+
+        const b2 = {
+            a1: {
+                a2: {
+                    a3: {
+                        a4: 3,
+                        b1: { b2: { b3: 2 } },
+                        c1: { c2: 2 }
+                    }
+                }
+            }
+        };
+
+        const merge3 = assignRecursive(a(), b2, { isOption: true, onlyExistingProp: { level: 3 } });
+        expect(merge3).toEqual(b2);
+
+        const merge4 = assignRecursive(a(), b2, { isOption: true, onlyExistingProp: { level: 4 } });
+        expect(merge4).toEqual({ a1: { a2: { a3: { a4: 3 } } } });
+
+        const a5 = ({ a1: { a2: { a3: { a4: { a5: 1 }, c1: 2 } } } });
+        const merge5 = assignRecursive(a5, b2, { isOption: true, onlyExistingProp: { level: 4 } });
+        expect(merge5).toEqual({ a1: { a2: { a3: { a4: 3, c1: { c2: 2 } } } } });
     });
 
     it('should merge only specified properties', () => {
@@ -147,5 +184,39 @@ describe('Test Suite AssignRecursive', () => {
         const expectedMerge = { b: 20, c: { c11: 50, c13: { c21: 21 }, }, d: 40, e: 5 };
 
         expect(merge).toEqual(expectedMerge);
+    });
+
+    it('should not recursively assign nonRecursivelyAssignableTypes', () => {
+        const regex = /regex/;
+        const merge1 = assignRecursive({ a: 1 }, { a: regex }, { isOption: true, nonRecursivelyAssignableTypes: [] });
+        expect(merge1.a).toBe(regex);
+
+        const o = { p: 2 };
+        const merge2 = assignRecursive({ a: 1 }, { a: o }, { isOption: true, nonRecursivelyAssignableTypes: [ Object ] });
+        expect(merge2.a).toBe(o);
+
+        const merge3 = assignRecursive({ a: 1 }, { a: o }, { isOption: true, nonRecursivelyAssignableTypes: [ 'object' ] });
+        expect(merge3.a).toBe(o);
+    });
+
+    it('should transform properties', () => {
+
+        const merge = assignRecursive({ a: 1 }, { a: { a1: 1, a2: 2 }, b: 3, c: { c1: 4 } }, {
+            isOption: true, transform: (prop: string, v: number) => {
+                if (/a(\d+)/.test(prop) || prop === 'b')
+                    return v * 10;
+
+                if (/c(\d+)/.test(prop))
+                    return v + '';
+
+                return v;
+            }
+        });
+
+        expect(merge).toEqual({
+            a: { a1: 10, a2: 20 },
+            b: 30,
+            c: { c1: '4' }
+        });
     });
 });
