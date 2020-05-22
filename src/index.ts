@@ -12,3 +12,5 @@ export * from './random';
 export * from './json';
 export * from './codified-error';
 export * from './mixin';
+export * from './pool';
+export * from './regex';

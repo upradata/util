@@ -12,7 +12,7 @@
     "version": "1.0.24",
     "description": "Set of typescript util tools",
     "main": "lib",
-    "types": "lib",
+    "types": "lib-esm",
     "module": "lib-esm",
     "files": [
         "lib",

@@ -18,8 +18,6 @@ export function isInt(n: number) {
         Math.floor(n) === n;
 }
 
-
-
 export function isFloat(n: number) {
     return !isInt(n);
 }
@@ -30,4 +28,8 @@ export function isNil(value: any) {
 
 export function isAsyncFunction(value: any) {
     return Object.prototype.toString.call(value) === '[object AsyncFunction]';
+}
+
+export function isPromise<T>(v: T | Promise<T>): v is Promise<T> {
+    return isDefined(v) && (v instanceof Promise || isDefined((v as any).then));
 }

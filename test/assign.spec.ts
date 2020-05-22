@@ -144,7 +144,7 @@ describe('Test Suite AssignRecursive', () => {
         const merge1 = assignRecursive(a(), b, { isOption: true, onlyExistingProp: { level: 0 } });
         expect(merge1).toEqual({ ...a(), ...b });
 
-        const merge2 = assignRecursive(a(), b, { isOption: true, onlyExistingProp: true });
+        const merge2 = assignRecursive(a(), b, { isOption: true, : true });
         expect(merge2).toEqual(a());
 
         const b2 = {
