@@ -14,3 +14,4 @@ export * from './codified-error';
 export * from './mixin';
 export * from './pool';
 export * from './regex';
+export * from './rxjs';

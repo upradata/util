@@ -24,6 +24,7 @@
         "clean": "shx rm -rf lib lib-esm",
         "prebuild": "npm run clean",
         "build": "tsc && tsc -m es6 --outDir lib-esm",
+        "watch": "concurrently 'tsc -w' 'tsc -w -m es6 --outDir lib-esm'",
         "postbuild": "npm run test && npm run e2e",
         "build:only": "npm run prebuild && tsc && tsc -m es6 --outDir lib-esm",
         "build:watch": "npm run tsc -w",
@@ -31,20 +32,22 @@
         "npm-publish": "npm run build && npm publish --access public"
     },
     "devDependencies": {
-        "@types/jest": "^24.0.23",
-        "@types/node": "^12.12.18",
-        "jest": "^24.9.0",
+        "@types/jest": "^25.2.3",
+        "@types/node": "^14.0.5",
+        "concurrently": "^5.2.0",
+        "jest": "^26.0.1",
+        "rxjs-compat": "^6.5.5",
         "shx": "^0.3.2",
-        "ts-jest": "^24.2.0",
-        "ts-node": "^8.5.4",
+        "ts-jest": "^26.0.0",
+        "ts-node": "^8.10.1",
         "tsconfig-paths": "^3.9.0",
-        "tslint": "^5.20.1",
-        "typescript": "^3.7.3"
+        "tslint": "^6.1.2",
+        "typescript": "^3.9.3"
     },
     "dependencies": {
         "csvtojson": "^2.0.10",
         "find-up": "^4.1.0",
-        "rxjs": "^6.5.3",
+        "rxjs": "^6.5.5",
         "ts-util-is": "^1.1.3"
     },
     "keywords": [
