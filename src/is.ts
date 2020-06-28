@@ -1,7 +1,9 @@
-import { isUndefined, isNull } from 'ts-util-is';
+import { isUndefined, isNull, isDefined } from 'ts-util-is';
 
-export * from 'ts-util-is';
+export * from 'ts-util-is/dist/src';
 
+/*
+Now ther ayre parts of ts-util-is
 export function isArray<T>(value: any): value is T[] {
     return Array.isArray(value);
 }
@@ -9,7 +11,7 @@ export function isArray<T>(value: any): value is T[] {
 export function isDefined(o: any) {
     return !isUndefined(o);
 }
-
+*/
 
 // MDN Polyfill
 export function isInt(n: number) {
