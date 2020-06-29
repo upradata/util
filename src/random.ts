@@ -1,3 +1,10 @@
+/*
+
+ IT IS WORKING. BUT WITH TOOLS LIKE ROLLUP/WEBPACK, IT IS A NIGHTMARE BECAUSE THEY CAN TRY TO INCLUDE NODEJS CRYPTO IN BROWER ENVIRONMENT (WEBPACK I FOUND THE SOLUTION TO
+NO TO, BUT ROLLUP NO).
+
+I PREFER TO SEPARATE THEM
+
 declare var ENVIRONMENT: 'browser' | 'node';
 
 export type Random = <T extends Int8Array | Int16Array | Int32Array | Uint8Array | Uint16Array | Uint32Array | Uint8ClampedArray | Float32Array | Float64Array | DataView>(array: T) => T;
@@ -11,5 +18,4 @@ else {
     const isBrowser = typeof window !== 'undefined';
     random = isBrowser ? crypto.getRandomValues.bind(crypto) : require('crypto').randomFillSync.bind(require('crypto'));
 }
-
-// const random = isBrowser ? crypto.getRandomValues : require('crypto').randomFillSync;
+ */

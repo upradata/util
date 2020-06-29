@@ -1,7 +1,6 @@
 
 import { PlainObj, PartialRecursive } from './type';
-import { isDefined } from './is';
-import { isUndefined } from 'ts-util-is';
+import { isDefined, isUndefined } from './is';
 
 
 export type AssignMode = 'of' | 'in';

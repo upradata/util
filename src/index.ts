@@ -8,7 +8,7 @@ export * from './useful';
 export * from './type';
 // export * from './camelcase.ts';
 export * from './string-util';
-export * from './random';
+// export * from './random';
 export * from './json';
 export * from './codified-error';
 export * from './mixin';

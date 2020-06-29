@@ -1,6 +1,5 @@
 import { isUndefined, isNull, isDefined } from 'ts-util-is';
-
-export * from 'ts-util-is/dist/src';
+export * from 'ts-util-is';
 
 /*
 Now ther ayre parts of ts-util-is
