@@ -48,3 +48,5 @@ export function sPipe(...transformers: StringTemplateTranformer[]) {
 
 
 export const entries = <T extends ObjectOf<any>>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
+export const keys = <T extends ObjectOf<any>>(o: T) => Object.keys(o) as [ keyof T ];
+export const values = <T extends ObjectOf<any>>(o: T) => Object.values(o) as T[ keyof T ];
