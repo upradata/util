@@ -1,4 +1,4 @@
-import { isArray, isDefined } from './is';
+import { isArray, isDefined, isPromise } from './is';
 import { ObjectOf } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
@@ -23,6 +23,11 @@ export function isErrorOf(e: any, errorCtor: (...args: []) => any) {
 
 export function ensureArray<T>(v: T | T[]): T[] {
     return isArray(v) ? v : isDefined(v) ? [ v ] : [];
+}
+
+
+export function ensurePromise<T>(v: T | Promise<T>): Promise<T> {
+    return isPromise(v) ? v : Promise.resolve(v);
 }
 
 

@@ -1,16 +1,11 @@
+// export * from 'ts-util-is';
+// export * is not support by rollup with commonjs :(((
+export {
+    isArray, isBase64, isBoolean, isDate, isDateValid, isDefined, isError, isFunction, isGuid, isInfinity, isNull, isNumber, isObject, isPlainObject, isRegExp, isString, isSymbol, isUndefined
+} from 'ts-util-is';
+
 import { isUndefined, isNull, isDefined } from 'ts-util-is';
-export * from 'ts-util-is';
 
-/*
-Now ther ayre parts of ts-util-is
-export function isArray<T>(value: any): value is T[] {
-    return Array.isArray(value);
-}
-
-export function isDefined(o: any) {
-    return !isUndefined(o);
-}
-*/
 
 // MDN Polyfill
 export function isInt(n: number) {
