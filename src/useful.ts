@@ -50,3 +50,8 @@ export function sPipe(...transformers: StringTemplateTranformer[]) {
 export const entries = <T extends ObjectOf<any>>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
 export const keys = <T extends ObjectOf<any>>(o: T) => Object.keys(o) as [ keyof T ];
 export const values = <T extends ObjectOf<any>>(o: T) => Object.values(o) as T[ keyof T ];
+
+export const fromKey = <O extends ObjectOf<any>>(array: O[] | Readonly<O[]>, key: keyof O, value: O[ keyof O ]): O => array.find(el => el[ key ] === value);
+
+export const toObject = <O extends ObjectOf<any>, K extends keyof O>(array: O[] | Readonly<O[]>, key: K): { [ key in O[ K ] ]: O } =>
+    array.reduce((o, curr) => ({ ...o, [ curr[ key ] ]: curr }), {} as any) as any;
