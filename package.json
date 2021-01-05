@@ -11,6 +11,7 @@
     "license": "MIT",
     "version": "1.0.24",
     "description": "Set of typescript util tools",
+    "sideEffects": false,
     "main": "lib",
     "types": "lib-esm",
     "module": "lib-esm",

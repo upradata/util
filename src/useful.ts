@@ -55,3 +55,6 @@ export const fromKey = <O extends ObjectOf<any>>(array: O[] | Readonly<O[]>, key
 
 export const toObject = <O extends ObjectOf<any>, K extends keyof O>(array: O[] | Readonly<O[]>, key: K): { [ key in O[ K ] ]: O } =>
     array.reduce((o, curr) => ({ ...o, [ curr[ key ] ]: curr }), {} as any) as any;
+
+
+export const removeUndefined = <O extends ObjectOf<any>>(o: O) => Object.fromEntries(Object.entries(o).filter(([ _, v ]) => typeof v !== 'undefined'));

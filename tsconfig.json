@@ -9,7 +9,7 @@
         "experimentalDecorators": true,
         "baseUrl": ".",
         "lib": [
-            "es2017",
+            "ESNext",
             "dom"
         ],
         "module": "umd",
