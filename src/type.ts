@@ -36,6 +36,14 @@ export type PartialRecursive<T> = {
 };
 
 
+export type RecordRecursive<O, Type> = {
+    [ K in keyof O ]: O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
+};
+
+export type PickType<O, T> = {
+    [ K in keyof O ]: Extract<O[ K ], T>
+};
+
 export type Function0<R = any> = () => R;
 export type Function1<Arg1, R = any> = (arg1: Arg1) => R;
 export type Function2<Arg1, Arg2, R = any> = (arg1: Arg1, arg2: Arg2) => R;
