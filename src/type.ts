@@ -89,3 +89,7 @@ export type TypedArray =
     | BigInt64Array
     | BigUint64Array
     | DataView;
+
+
+export type Key = string | number | symbol;
+export type Prop = Key;

@@ -1,5 +1,5 @@
-import { isArray, isDefined, isPromise } from './is';
-import { ObjectOf } from './type';
+import { isArray, isDefined, isPlainObject, isPromise } from './is';
+import { Constructor, ObjectOf, Prop } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -31,21 +31,6 @@ export function ensurePromise<T>(v: T | Promise<T>): Promise<T> {
 }
 
 
-type StringType = { toString(): string; };
-export type StringTemplateTranformer = (strings: TemplateStringsArray, ...keys: StringType[]) => string;
-
-export function sPipe(...transformers: StringTemplateTranformer[]) {
-    return (strings: TemplateStringsArray, ...keys: StringType[]) => {
-        let s: string = transformers[ 0 ](strings, ...keys);
-
-        for (const transformer of transformers.slice(1)) {
-            s = transformer`${s}`;
-        }
-
-        return s;
-    };
-}
-
 
 export const entries = <T extends ObjectOf<any>>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
 export const keys = <T extends ObjectOf<any>>(o: T) => Object.keys(o) as [ keyof T ];
@@ -58,3 +43,36 @@ export const toObject = <O extends ObjectOf<any>, K extends keyof O>(array: O[] 
 
 
 export const removeUndefined = <O extends ObjectOf<any>>(o: O) => Object.fromEntries(Object.entries(o).filter(([ _, v ]) => typeof v !== 'undefined'));
+
+// props = a.b.c.d for instance
+// getRecursive(o, props) => get o.a.b.c.d
+// if prop does not exist, return undefined
+export const getRecursive = <O extends object>(o: O, props: string) => props.split('.').reduce((obj, p) => obj[ p ] || {}, o);
+
+// setRecursive(o, props, value) sets o.a.b.c.d = value
+// if a prop does not exist, it is created as {}
+export const setRecursive = <O extends object>(o: O, props: string, value: any) => props.split('.').reduce((obj, p, i, arr) => {
+    return obj[ p ] = i === arr.length - 1 ? value : obj[ p ] || {};
+}, o);
+
+export const dottedKeys = (o: object): string[] => Object.entries(o).map(([ k, v ]) => isPlainObject(v) ? `${k}.${dottedKeys(v)}` : k);
+
+
+// create object from keys
+// makeObject([ 'a', 'b', 'c' ], k => `value: ${k}`);
+// makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${k}`);
+// makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${k}`);
+// gives the same result => { a: 'value a', b: 'value b', c: 'value c' };
+
+export function makeObject<Klass extends Constructor, V extends (key: keyof InstanceType<Klass>) => any>(klass: Klass, value: V): Record<keyof InstanceType<Klass>, ReturnType<V>>;
+export function makeObject<O extends {}, V extends (key: keyof O) => any>(obj: O, value: V): Record<keyof O, ReturnType<V>>;
+export function makeObject<Keys extends Array<Prop>, V extends (key: Keys[ number ]) => any>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
+
+export function makeObject(arg: Prop[] | object | Constructor, value: (k: Prop) => any): object {
+    const keys = Array.isArray(arg) ? arg : Object.keys(arg.constructor ? new (arg as Constructor)() : arg);
+
+    return keys.reduce((o, k) => {
+        o[ k ] = value(k);
+        return o;
+    }, {} as any);
+}
