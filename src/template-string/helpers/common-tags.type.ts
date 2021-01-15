@@ -1,4 +1,4 @@
-export class CommonTagStyleList<T = any> {
+export class CommonTagStyle<T = any> {
     html: T = undefined;
 
     /**
