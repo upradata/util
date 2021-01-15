@@ -15,3 +15,4 @@ export * from './pool';
 export * from './regex';
 export * from './rxjs';
 export * from './template-string';
+export * from './object';

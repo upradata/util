@@ -3,7 +3,7 @@ import { StyleTransform, Style, StyleFlatten } from './style';
 import { CommonTagStyle } from './helpers/common-tags.type';
 import * as commonTags from 'common-tags';
 import { recreateString, ToString } from './template-string';
-import { keys, makeObject } from '../useful';
+import { keys, makeObject } from '../object';
 
 
 export const buildStyle = <S extends ObjectOf<StyleTransform | Style>>(names: Array<string | number>, styleFactories: S, flatten?: StyleFlatten) => {
@@ -22,7 +22,7 @@ export const buildStyle = <S extends ObjectOf<StyleTransform | Style>>(names: Ar
 
 
 
-export type CommonTagsStringTranform = PickType<CommonTagStyle, StyleTransform>;
+export type CommonTagsStringTranform = CommonTagStyle<StyleTransform>;
 export type DefinedStringTransforms = CommonTagsStringTranform /* & OtherClasses if we went to add other transform builders*/;
 
 
