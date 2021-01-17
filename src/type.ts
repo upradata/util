@@ -38,9 +38,10 @@ export type PartialRecursive<T> = {
 };
 
 
-export type RecordRecursive<O, Type> = {
-    [ K in keyof O ]: O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
+export type RecordRecursive<O extends {}, Type> = {
+    [ K in keyof O ]: O[ K ] extends any[] ? Type : O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
 };
+
 
 
 export type Function0<R = any> = () => R;
@@ -59,6 +60,7 @@ export type Constructor3<P1, P2, P3, I = object> = new (p1: P1, p2: P2, p3: P3) 
 export type Constructor4<P1, P2, P3, P4, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4) => I;
 export type Constructor5<P1, P2, P3, P4, P5, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4, p5: P5) => I;
 
+export type TT<K> = K | K[];
 
 export type TT$<K> = K | Promise<K>;
 

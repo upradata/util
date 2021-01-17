@@ -81,7 +81,7 @@ export type FlatKeys<O extends {}, Depth extends number = 20> = ValueOf<{
 }[ Depth extends -1 ? "done" : "recur" ];
  */
 
-export const keysRecursive = <O extends {}>(o: O): FlatKeys<O>[] => entries(o).map(([ k, v ]) => isPlainObject(v) ? `${k}.${keysRecursive(v)}` : k) as any;
+export const keysRecursive = <O extends {}>(o: O): FlatKeys<O> extends any ? string[] : FlatKeys<O>[] => entries(o).flatMap(([ k, v ]) => isPlainObject(v) ? keysRecursive<{}>(v).map(key => `${k}.${key}`) as any : [ k ]) as any;
 
 
 
@@ -90,16 +90,26 @@ export const keysRecursive = <O extends {}>(o: O): FlatKeys<O>[] => entries(o).m
 // makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${k}`);
 // makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${k}`);
 // gives the same result => { a: 'value a', b: 'value b', c: 'value c' };
+type Unpacked<T> = T extends (infer U)[] ? U : T;
 
-export function makeObject<Klass extends Constructor, V extends (key: keyof InstanceType<Klass>) => any>(klass: Klass, value: V): Record<keyof InstanceType<Klass>, ReturnType<V>>;
-export function makeObject<O extends {}, V extends (key: keyof O) => any>(obj: O, value: V): Record<keyof O, ReturnType<V>>;
-export function makeObject<Keys extends Array<Prop>, V extends (key: Keys[ number ]) => any>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
+type MakeObjectKlassHandler<Klass extends Constructor> = (key: keyof InstanceType<Klass>, value?: ValueOf<InstanceType<Klass>>, arg?: InstanceType<Klass>) => any;
 
-export function makeObject(arg: Prop[] | object | Constructor, value: (k: Prop) => any): object {
-    const keys = Array.isArray(arg) ? arg : Object.keys(arg.constructor ? new (arg as Constructor)() : arg);
+type MakeObjectObjHandler<O extends {}> = (key: keyof O, value?: ValueOf<O>, arg?: O) => any;
+
+type MakeObjectArrayHandler<Keys extends Prop[]> = (key: Keys[ number ], arg?: Prop[]) => any;
+
+export function makeObject<Klass extends Constructor, V extends MakeObjectKlassHandler<Klass>>(klass: Klass, value: V): Record<keyof InstanceType<Klass>, ReturnType<V>>;
+
+export function makeObject<Keys extends Prop[], V extends MakeObjectArrayHandler<Keys>>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
+
+export function makeObject<O extends {}, V extends MakeObjectObjHandler<O>>(obj: O, value: V): Record<keyof O, ReturnType<V>>;
+
+export function makeObject(arg: Prop[] | object | Constructor, value: (k: Prop, valueOrArg: any, arg?: object) => any): object {
+    const values = Array.isArray(arg) ? arg : arg.constructor && typeof arg === 'function' ? new (arg as Constructor)() : arg;
+    const keys = Array.isArray(arg) ? arg : Object.keys(values);
 
     return keys.reduce((o, k) => {
-        o[ k ] = value(k);
+        o[ k ] = Array.isArray(arg) ? value(k, arg) : value(k, arg[ k ], arg);
         return o;
     }, {} as any);
 }

@@ -1,4 +1,4 @@
-import { recreateString } from './template-string';
+import { recreateString } from './recreate-string';
 
 export type StyleTransform<T = any> = (...args: T[]) => T;
 export type StyleMode = 'args' | 'full' | 'both' | 'null';
@@ -9,6 +9,7 @@ export type StyleFlatten = (strings: TemplateStringsArray, ...keys: any[]) => an
 
 export class StyleOptions {
     flatten?: StyleFlatten;
+    flattenIfNoTransforms?: StyleFlatten;
     mode?: StyleMode;
     transforms?: Style[ 'transforms' ];
 }
@@ -20,12 +21,14 @@ export class Style {
     static get [ Symbol.species ]() { return Style; }
     public transforms: Array<StyleTransform | { mode: StyleMode; transform: StyleTransform; } | Style> = [];
     public mode: StyleMode = undefined;
-    public flatten?: (strings: TemplateStringsArray, ...keys: any[]) => any = undefined;
+    public flatten?: StyleFlatten = undefined;
+    flattenIfNoTransforms?: StyleFlatten = undefined;
 
 
     constructor(public options: StyleOptions = {}) {
         this.mode = options.mode || 'null';
         this.flatten = options.flatten;
+        this.flattenIfNoTransforms = options.flattenIfNoTransforms;
 
         if (options.transforms)
             this.add(...options.transforms);
@@ -91,7 +94,7 @@ export class Style {
         return this.styleTemplate();
     }
 
-    $$(s: string) {
+    $$<T = any>(s: string): T {
         return this.styleTemplate()`${s}`;
     }
 
@@ -109,7 +112,7 @@ export class Style {
 
             if (this.flatten) {
                 const flatten = this.flatten(strings, ...newKeys);
-                return this.applyTransforms(flatten) || flatten;
+                return this.applyTransforms(flatten) ?? flatten;
             }
 
             return this.applyTransforms(strings, ...newKeys);
@@ -127,13 +130,23 @@ export class Style {
     }
 
     public applyTransforms(...args: any[]) {
-        const transforms = this.getTransforms().filter(t => this.isFullMode(t.mode));
-        if (transforms.length === 0)
-            return undefined;
+        const transforms = this.getTransforms().filter(t => this.isFullMode(t.mode)).map(t => t.transform);
 
-        return transforms.reduce((prev, t, i) => i === 0 ? t.transform(...prev) : t.transform(prev), args);
+        if (transforms.length === 0) {
+            if (this.flattenIfNoTransforms)
+                transforms.push(this.flattenIfNoTransforms);
+            else
+                return undefined;
+        }
+
+        return transforms.reduce((prev, transform) => Array.isArray(prev) ? transform(...prev) : transform(prev), args);
     }
 }
 
 
 export const stringify = new Style({ flatten: recreateString });
+
+
+export function style(...transforms: StyleOptions[ 'transforms' ]) {
+    return new Style({ transforms }).$;
+}

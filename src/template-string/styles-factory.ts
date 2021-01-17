@@ -1,12 +1,13 @@
-import { ObjectOf, PickType } from '../type';
-import { StyleTransform, Style, StyleFlatten } from './style';
+import { Prop, TT } from './../type';
+import { ObjectOf } from '../type';
+import { StyleTransform, Style, StyleFlatten, StyleOptions } from './style';
 import { CommonTagStyle } from './helpers/common-tags.type';
 import * as commonTags from 'common-tags';
-import { recreateString, ToString } from './template-string';
+import { recreateString, ToString } from './recreate-string';
 import { keys, makeObject } from '../object';
 
 
-export const buildStyle = <S extends ObjectOf<StyleTransform | Style>>(names: Array<string | number>, styleFactories: S, flatten?: StyleFlatten) => {
+export const buildStyle = (names: Array<string | number>, options: Record<Prop, StyleOptions>) => {
 
     for (const k of names) {
 
@@ -14,7 +15,10 @@ export const buildStyle = <S extends ObjectOf<StyleTransform | Style>>(names: Ar
             // tslint:disable-next-line:object-literal-shorthand
             get: function (this: Style) {
                 // this will allow syntax red.bgYellow.underline.$ 
-                return new Style({ transforms: [ this, styleFactories[ k ] ], flatten });
+                const o = { ...options[ k ] };
+                o.transforms = [ this, ...o.transforms ];
+
+                return new Style(o);
             }
         });
     }
@@ -35,6 +39,6 @@ export const transformToStyleTemplate = (transform: (arg: any) => string) => (st
 
 
 const commonTagsKeys = keys(new CommonTagStyle());
-buildStyle(commonTagsKeys, makeObject(commonTagsKeys, k => commonTags[ k ]));
+buildStyle(commonTagsKeys, makeObject(commonTagsKeys, k => ({ transforms: [ commonTags[ k ] ] })));
 
 export const styles = new Style() as Styles<DefinedStringTransforms>;
