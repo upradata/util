@@ -1,6 +1,5 @@
-import { Prop, TT } from './../type';
-import { ObjectOf } from '../type';
-import { StyleTransform, Style, StyleFlatten, StyleOptions } from './style';
+import { Prop } from './../type';
+import { StyleTransform, Style, StyleOptions } from './style';
 import { CommonTagStyle } from './helpers/common-tags.type';
 import * as commonTags from 'common-tags';
 import { recreateString, ToString } from './recreate-string';
@@ -40,5 +39,3 @@ export const transformToStyleTemplate = (transform: (arg: any) => string) => (st
 
 const commonTagsKeys = keys(new CommonTagStyle());
 buildStyle(commonTagsKeys, makeObject(commonTagsKeys, k => ({ transforms: [ commonTags[ k ] ] })));
-
-export const styles = new Style() as Styles<DefinedStringTransforms>;
