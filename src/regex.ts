@@ -8,8 +8,14 @@ export const mergeRegexesWithFlags = (...regexes: (RegExp | string)[]) => new Re
     regexes.slice(-1)[ 0 ] as string
 ); */
 
+export interface MergeRexesOptions {
+    flags?: string;
+    join?: string;
+    groupify?: boolean;
+    groupAll?: boolean;
+}
 
-export const mergeRegexes = (regexes: (RegExp | string)[], options: { flags?: string; join?: string; groupify?: boolean; groupAll?: boolean; } = {}) => {
+export const mergeRegexes = (regexes: (RegExp | string)[], options: MergeRexesOptions = {}) => {
     const openGroup = (isEnabled: boolean) => isEnabled ? '(' : '';
     const closeGroup = (isEnabled: boolean) => isEnabled ? ')' : '';
 

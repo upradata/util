@@ -1,6 +1,7 @@
-
+import { objectToString } from './format-string';
 import { PlainObj, PartialRecursive } from './type';
 import { isDefined, isUndefined } from './is';
+
 
 
 export type AssignMode = 'of' | 'in';
@@ -138,7 +139,7 @@ class Assign {
                                 this.assignProp(prop, to, inn, isPropPrimitive);
                             else { // concat
                                 if (isDefined(to[ prop ]) && !Array.isArray(to[ prop ]))
-                                    throw new Error(`Error while assigning: property ${prop} in ${to} is not an array (concat mode)`);
+                                    throw new Error(`Error while assigning: property "${prop}" in ${objectToString(to)} is not an array (concat mode)`);
 
                                 const toArr = isDefined(to[ prop ]) ? to[ prop ] : [];
                                 this.assignProp(prop, to, { [ prop ]: toArr.concat(inn[ prop ]) }, isPropPrimitive);

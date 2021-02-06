@@ -1,4 +1,4 @@
-import { styles as s } from '../styles-factory';
+import { styles as s } from '../init';
 
 export const html = s.html.$;
 export const codeBlock = s.codeBlock.$;

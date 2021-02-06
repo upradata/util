@@ -1,10 +1,21 @@
-export interface ObjectOf<T = any> {
-    [ k: string ]: T;
-}
+export type Key = string | number | symbol;
+export type Prop = Key;
+export type NonObject = string | number | bigint | symbol | boolean | Function | RegExp;
+
+export type RecordOf<T = any> = Record<Key, T>;
+
+export interface ObjectOf<T> {
+    [ K: string ]: T;
+};
+
+export type InferRecordType<O> = O extends { [ K in Key ]: infer U; } ? U : never;
+
+export type Typify<T> = { [ K in keyof T ]: T[ K ] };
+
 
 export type ValueOf<O extends {}> = O[ keyof O ];
 
-export type PlainObj<T = any> = ObjectOf<T>;
+export type PlainObj<T = any> = RecordOf<T>;
 
 /* export type PartialRecursive<T> = PartialRec<T>;
 
@@ -92,21 +103,22 @@ export type TypedArray =
     | DataView;
 
 
-export type Key = string | number | symbol;
-export type Prop = Key;
-
-
 
 // let b: ExcludeType<{ a: 1; b: undefined; c: 2; }, undefined>; => 'a' | 'b';
-export type ExcludeType<T, OmitType> = { [ K in keyof T ]: T[ K ] extends OmitType ? never : K; }[ keyof T ];
+export type ExcludeKeysType<T, OmitType> = { [ K in keyof T ]: T[ K ] extends OmitType ? never : K; }[ keyof T ];
+export type ExtractKeysType<T, IncludeType> = { [ K in keyof T ]: T[ K ] extends IncludeType ? K : never; }[ keyof T ];
+
 
 // let b1: OmitType<{ a: 1; b: undefined; c: 2; }, undefined>; => { a: 1; c: 2; }
 // let b2: PickType<{ a: 1; b: undefined; c: 2; }, undefined>; => { b: undefined; }
-export type OmitType<T, OmitType> = Pick<T, ExcludeType<T, OmitType>>;
-export type PickType<T, OmitType> = Omit<T, ExcludeType<T, OmitType>>;
+export type OmitType<T, OmitType> = Pick<T, ExcludeKeysType<T, OmitType>>;
+export type PickType<T, OmitType> = Omit<T, ExcludeKeysType<T, OmitType>>;
 /*
 // It is less good this implementation because unpicked keys are not deleted but are with type "never"
 export type PickType<O, T> = {
     [ K in keyof O ]: Extract<O[ K ], T>
 };
  */
+
+
+export type ToString = { toString(): string; };

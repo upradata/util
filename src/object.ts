@@ -1,11 +1,11 @@
-import { isPlainObject } from './is';
-import { Constructor, ObjectOf, OmitType, Prop, ValueOf } from './type';
+import { isDefinedProp, isPlainObject } from './is';
+import { Constructor, InferRecordType, Key, RecordOf, OmitType, ValueOf } from './type';
 
 
 // Same as Object.entries/keys/values but with better typing
 export const entries = <T extends {}>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
 export const keys = <T extends {}>(o: T) => Object.keys(o) as [ keyof T ];
-export const values = <T extends ObjectOf<any>>(o: T) => Object.values(o) as T[ keyof T ];
+export const values = <T extends RecordOf<any>>(o: T) => Object.values(o) as T[ keyof T ];
 
 
 // const arr = [ { key: 'a', v: 1 } as const, { key: 'b', v: 2 } as const, { key: 'a', v: 3 } as const ];
@@ -18,10 +18,39 @@ export const fromKey = <O extends {}, K extends keyof O, V extends O[ K ]>(array
 export const fromKeyAll = <O extends {}, K extends keyof O, V extends O[ K ]>(array: O[] | Readonly<O[]>, key: K, value: V): Extract<O, Record<K, V>>[] => array.filter(el => el[ key ] === value) as any;
 
 
-// toObject([ { key: 'a' as const, v: 1 }, { key: 'b' as const, v: 2 } ], 'key') => 
-// { a: { key: 'a' as const, v: 1 }, b: { key: 'b' as const, v: 2 } };
-export const toObject = <O extends ObjectOf<any>, K extends keyof O>(array: O[] | Readonly<O[]>, key: K): { [ Key in O[ K ] ]: O } =>
-    array.reduce((o, curr) => ({ ...o, [ curr[ key ] ]: curr }), {} as any) as any;
+// toObject([ { key: 'a' as const, v: 1 }, { key: 'b' as const, v: 2 } ], 'key', 'value') => { a: { key: 'a', v: 1 }, b: { key: 'b', v: 2 } };
+// toObject([ { key: 'a', v: 1 }, { key: 'b', v: 2 }, { key: 'a', v: 3 } ], 'key', 'array') => { a: { key: 'a', v: [1,3] }, b: { key: 'b', v: [2] } };
+export const toObject = <O extends RecordOf<any>, K extends keyof O, M extends 'value' | 'array' = 'array'>(array: O[] | Readonly<O[]>, key: K, mode: M = 'value' as M): { [ Key in O[ K ] ]: M extends 'value' ? O : O[] } => {
+    return array.reduce((o, curr) => {
+        const k = curr[ key ];
+        o[ k ] = mode === 'value' ? curr : [ ...(o[ k ] || []), curr ] as any;
+
+        return o;
+        // return { ...o, [ k ]: mode === 'value' ? curr : [ ...(o[ k ] || []), curr ] };
+    }, {} as any) as any;
+};
+
+
+// toArray({ a: { k1: 1, k2: 2 }, b: { k1: 3, k2: 4 } }, 'key') => [ { key: 'a', k1: 1, k2: 2 }, { key: 'b', k1: 3, k2: 4 } ]
+// toArray({ a: { k1: 1, k2: 2 }, b: { k1: 3, k2: 4 } }, undefined) => [ { k1: 1, k2: 2 }, { k1: 3, k2: 4 } ]
+type ToArrayReturn<T, Extra = {}> = (InferRecordType<T> extends {} ? InferRecordType<T> : { value: T; }) & Extra;
+type KeyOf<T> = InferRecordType<T> extends {} ? keyof T : T;
+
+export function toArray<O extends {}>(o: O): ToArrayReturn<O, { key: KeyOf<O>; }>[];
+export function toArray<O extends {}>(o: O, keyName?: undefined): ToArrayReturn<O>[];
+export function toArray<O extends {}, K extends Key = 'key'>(o: O, keyName?: K): ToArrayReturn<O, { [ k in K ]: KeyOf<O> }>[];
+export function toArray<O>(o: O, keyName?: Key): O[] {
+    const key = arguments.length === 1 ? 'key' : keyName === '' ? undefined : keyName;
+
+    return Object.entries(o).map(([ k, v ]) => {
+        const value = typeof v !== 'object' ? v : { value: v };
+
+        if (key === undefined || typeof v !== 'object')
+            return value;
+
+        return { [ key ]: k, ...value };
+    });
+};
 
 
 // removeUndefined({ a: 1, b: 2, c: undefined as undefined, d: 2 }); => { a: 1, b: 2, d: 2; }
@@ -31,7 +60,7 @@ export const removeUndefined = <O extends {}>(o: O): OmitType<O, undefined> => O
 // props = a.b.c.d for instance
 // getRecursive(o, props) => get o.a.b.c.d
 // if prop does not exist, return undefined
-export const getRecursive = <O extends object>(o: O, props: string) => props.split('.').reduce((obj, p) => obj[ p ] || {}, o);
+export const getRecursive = <O extends object>(o: O, props: string) => props.split('.').reduce((obj, p) => obj?.[ p ], o);
 
 // setRecursive(o, props, value) sets o.a.b.c.d = value
 // if a prop does not exist, it is created as {}
@@ -90,26 +119,39 @@ export const keysRecursive = <O extends {}>(o: O): FlatKeys<O> extends any ? str
 // makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${k}`);
 // makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${k}`);
 // gives the same result => { a: 'value a', b: 'value b', c: 'value c' };
-type Unpacked<T> = T extends (infer U)[] ? U : T;
 
 type MakeObjectKlassHandler<Klass extends Constructor> = (key: keyof InstanceType<Klass>, value?: ValueOf<InstanceType<Klass>>, arg?: InstanceType<Klass>) => any;
 
 type MakeObjectObjHandler<O extends {}> = (key: keyof O, value?: ValueOf<O>, arg?: O) => any;
 
-type MakeObjectArrayHandler<Keys extends Prop[]> = (key: Keys[ number ], arg?: Prop[]) => any;
+type MakeObjectArrayHandlerWithKeys<Keys extends Key[]> = (key: Keys[ number ], arg?: Key[]) => any;
+type MakeObjectArrayHandlerWithValues<Values extends any[]> = (key: Values[ number ], arg?: Key[]) => { key: Key; value: any; };
 
 export function makeObject<Klass extends Constructor, V extends MakeObjectKlassHandler<Klass>>(klass: Klass, value: V): Record<keyof InstanceType<Klass>, ReturnType<V>>;
 
-export function makeObject<Keys extends Prop[], V extends MakeObjectArrayHandler<Keys>>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
+export function makeObject<Keys extends Key[], V extends MakeObjectArrayHandlerWithKeys<Keys>>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
+export function makeObject<Values extends any[], V extends MakeObjectArrayHandlerWithValues<Values>>(k: Values, value: V): Record<ReturnType<V>[ 'key' ], ReturnType<V>[ 'value' ]>;
 
 export function makeObject<O extends {}, V extends MakeObjectObjHandler<O>>(obj: O, value: V): Record<keyof O, ReturnType<V>>;
 
-export function makeObject(arg: Prop[] | object | Constructor, value: (k: Prop, valueOrArg: any, arg?: object) => any): object {
+export function makeObject(arg: Key[] | object | Constructor, value: (k: Key, valueOrArg: any, arg?: object) => any): object {
     const values = Array.isArray(arg) ? arg : arg.constructor && typeof arg === 'function' ? new (arg as Constructor)() : arg;
     const keys = Array.isArray(arg) ? arg : Object.keys(values);
 
     return keys.reduce((o, k) => {
-        o[ k ] = Array.isArray(arg) ? value(k, arg) : value(k, arg[ k ], arg);
+        const r = Array.isArray(arg) ? value(k, arg) : value(k, arg[ k ], arg);
+
+        const key = r.key || k;
+        const v = r.key ? r.value : r;
+
+        o[ key ] = v;
         return o;
     }, {} as any);
 }
+
+
+// getIfDefined({ a: 1, b: 2 }, 'a', 3); => 1
+// getIfDefined({ a: 1, b: 2 }, 'c', 3); => 3
+export const getIfDefined = <T extends {} | any[], K extends keyof T>(o: T, key: K, defaultValue: T[ K ] = undefined): T[ K ] => {
+    return isDefinedProp(o, key) ? o[ key ] : defaultValue;
+};

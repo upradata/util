@@ -29,3 +29,8 @@ export function isAsyncFunction(value: any) {
 export function isPromise<T>(v: T | Promise<T>): v is Promise<T> {
     return isDefined(v) && (v instanceof Promise || isDefined((v as any).then));
 }
+
+
+export function isDefinedProp<T extends {} | any[]>(o: T, k: keyof T) {
+    return k in o;
+}

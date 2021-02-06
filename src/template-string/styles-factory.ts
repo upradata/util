@@ -1,8 +1,8 @@
-import { Prop } from './../type';
+import { Prop, ToString } from './../type';
 import { StyleTransform, Style, StyleOptions } from './style';
 import { CommonTagStyle } from './helpers/common-tags.type';
 import * as commonTags from 'common-tags';
-import { recreateString, ToString } from './recreate-string';
+import { recreateString } from './recreate-string';
 import { keys, makeObject } from '../object';
 
 
