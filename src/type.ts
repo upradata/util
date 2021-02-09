@@ -9,6 +9,7 @@ export interface ObjectOf<T> {
 };
 
 export type InferRecordType<O> = O extends { [ K in Key ]: infer U; } ? U : never;
+export type InferArrayType<A> = A extends Arr<infer U> ? U : never;
 
 export type Typify<T> = { [ K in keyof T ]: T[ K ] };
 
@@ -50,7 +51,7 @@ export type PartialRecursive<T> = {
 
 
 export type RecordRecursive<O extends {}, Type> = {
-    [ K in keyof O ]: O[ K ] extends any[] ? Type : O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
+    [ K in keyof O ]: O[ K ] extends Arr<any> ? Type : O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
 };
 
 
@@ -61,7 +62,7 @@ export type Function2<Arg1, Arg2, R = any> = (arg1: Arg1, arg2: Arg2) => R;
 export type Function3<Arg1, Arg2, Arg3, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3) => R;
 export type Function4<Arg1, Arg2, Arg3, Arg4, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4) => R;
 export type Function5<Arg1, Arg2, Arg3, Arg4, Arg5, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4, arg5: Arg5) => R;
-export type AnyFunction<R = any> = (...args: any[]) => R;
+export type AnyFunction<R = any> = (...args: Arr<any>) => R;
 
 
 export type Constructor<P = any, I = object> = new (...input: P[]) => I;
@@ -113,12 +114,14 @@ export type ExtractKeysType<T, IncludeType> = { [ K in keyof T ]: T[ K ] extends
 // let b2: PickType<{ a: 1; b: undefined; c: 2; }, undefined>; => { b: undefined; }
 export type OmitType<T, OmitType> = Pick<T, ExcludeKeysType<T, OmitType>>;
 export type PickType<T, OmitType> = Omit<T, ExcludeKeysType<T, OmitType>>;
-/*
+
 // It is less good this implementation because unpicked keys are not deleted but are with type "never"
-export type PickType<O, T> = {
+export type PickType2<O, T> = {
     [ K in keyof O ]: Extract<O[ K ], T>
 };
- */
+
 
 
 export type ToString = { toString(): string; };
+
+export type Arr<T> = Array<T> | ReadonlyArray<T>;

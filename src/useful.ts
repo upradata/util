@@ -1,4 +1,5 @@
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
+import { PickType, Key, ExcludeKeysType, InferArrayType, PickType2, Arr } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -120,3 +121,26 @@ export const select = <D, F = never>(data: D, finalValue: F = undefined, done: b
     .next(data => ({ if: 1 === 1, value: true }))
     .next(data => ({ if: 1 === 1, value: [ 1, 2, 3 ] }))
     .value; */
+
+
+export const filterByType = <A extends Arr<any>, T extends InferArrayType<A>, V extends T[ K ], K extends Key = 'type'>(array: A, value: V, key: K = 'type' as any):
+    T extends { [ k in K ]: V } ? T[] : never => {
+    return array.filter(v => v[ key ] === value) as any;
+};
+
+/* const a = filterByType([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', v: 11 }, { type: 'a', v: 111 }, { type: 'c', v: 3 } ] as const, 'a' as const);
+const a0 = a[ 0 ];
+a0.type === 'a';
+a0.v === 11;
+
+const b = filterByType([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', v: 11 }, { type: 'a', v: 111 }, { type: 'c', v: 3 } ], 'a');
+ */
+
+
+export const firstTruthy = (...array: any[]): boolean => {
+    if (array.length === 0)
+        return false;
+
+    const [ head, ...tail ] = array;
+    return head ? true : firstTruthy(...tail);
+};

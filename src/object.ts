@@ -1,5 +1,5 @@
 import { isDefinedProp, isPlainObject } from './is';
-import { Constructor, InferRecordType, Key, RecordOf, OmitType, ValueOf } from './type';
+import { Constructor, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr } from './type';
 
 
 // Same as Object.entries/keys/values but with better typing
@@ -152,6 +152,6 @@ export function makeObject(arg: Key[] | object | Constructor, value: (k: Key, va
 
 // getIfDefined({ a: 1, b: 2 }, 'a', 3); => 1
 // getIfDefined({ a: 1, b: 2 }, 'c', 3); => 3
-export const getIfDefined = <T extends {} | any[], K extends keyof T>(o: T, key: K, defaultValue: T[ K ] = undefined): T[ K ] => {
+export const getIfDefined = <T extends {} | Arr<any>, K extends keyof T>(o: T, key: K, defaultValue: T[ K ] = undefined): T[ K ] => {
     return isDefinedProp(o, key) ? o[ key ] : defaultValue;
 };
