@@ -1,5 +1,5 @@
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { PickType, Key, ExcludeKeysType, InferArrayType, PickType2, Arr } from './type';
+import { PickType, Key, ExcludeKeysType, InferArrayType, PickType2, Arr, Function0 } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -137,10 +137,14 @@ const b = filterByType([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', 
  */
 
 
-export const firstTruthy = (...array: any[]): boolean => {
+export const firstTruthy = (...array: Array<any | Function0>): boolean => {
     if (array.length === 0)
         return false;
 
     const [ head, ...tail ] = array;
-    return head ? true : firstTruthy(...tail);
+
+    const isHeadFunction = typeof head === 'function' && head.length === 0;
+    const value = isHeadFunction ? head() : head;
+
+    return value ? true : firstTruthy(...tail);
 };
