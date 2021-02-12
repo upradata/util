@@ -1,10 +1,17 @@
 import { isDefinedProp, isPlainObject } from './is';
-import { Constructor, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr } from './type';
+import { Constructor, Constructor0, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr } from './type';
 
 
 // Same as Object.entries/keys/values but with better typing
 export const entries = <T extends {}>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
-export const keys = <T extends {}>(o: T) => Object.keys(o) as [ keyof T ];
+
+type KeyType<T> = T extends Constructor0 ? InstanceType<T> : T;
+export const keys = <T extends Constructor0 | {}>(o: T): [ keyof KeyType<T> ] => {
+    return Object.keys((o as Constructor0).prototype ? new (<Constructor0>o)() : o) as any;
+};
+/* const k1 = keys({ a: 1, b: 2 });
+const k2 = keys(class A { a: 1; b: 2; }); */
+
 export const values = <T extends RecordOf<any>>(o: T) => Object.values(o) as T[ keyof T ];
 
 
@@ -115,22 +122,24 @@ export const keysRecursive = <O extends {}>(o: O): FlatKeys<O> extends any ? str
 
 
 // create object from keys
-// makeObject([ 'a', 'b', 'c' ], k => `value: ${k}`);
-// makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${k}`);
-// makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${k}`);
+// makeObject([ 'a', 'b', 'c' ] as const, k => `value: ${k}` as const);
+// makeObject([ 'a', 'b', 'c' ] as const, k => ({ key: k, value: `value: ${k}` as const }))
+// makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${k}` as const);
+// makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${k}` as const);
 // gives the same result => { a: 'value a', b: 'value b', c: 'value c' };
 
 type MakeObjectKlassHandler<Klass extends Constructor> = (key: keyof InstanceType<Klass>, value?: ValueOf<InstanceType<Klass>>, arg?: InstanceType<Klass>) => any;
 
 type MakeObjectObjHandler<O extends {}> = (key: keyof O, value?: ValueOf<O>, arg?: O) => any;
 
-type MakeObjectArrayHandlerWithKeys<Keys extends Key[]> = (key: Keys[ number ], arg?: Key[]) => any;
-type MakeObjectArrayHandlerWithValues<Values extends any[]> = (key: Values[ number ], arg?: Key[]) => { key: Key; value: any; };
+type MakeObjectArrayHandlerWithKeys<Keys extends Arr<Key>> = (key: Keys[ number ], arg?: Key[]) => any;
+type MakeObjectArrayHandlerWithValues<Values extends Arr<any>> = (value: Values[ number ], arg?: Key[]) => { key: Key; value: any; };
 
 export function makeObject<Klass extends Constructor, V extends MakeObjectKlassHandler<Klass>>(klass: Klass, value: V): Record<keyof InstanceType<Klass>, ReturnType<V>>;
 
-export function makeObject<Keys extends Key[], V extends MakeObjectArrayHandlerWithKeys<Keys>>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
-export function makeObject<Values extends any[], V extends MakeObjectArrayHandlerWithValues<Values>>(k: Values, value: V): Record<ReturnType<V>[ 'key' ], ReturnType<V>[ 'value' ]>;
+export function makeObject<Values extends Arr<any>, V extends MakeObjectArrayHandlerWithValues<Values>>(k: Values, value: V): Record<ReturnType<V>[ 'key' ], ReturnType<V>[ 'value' ]>;
+
+export function makeObject<Keys extends Arr<Key>, V extends MakeObjectArrayHandlerWithKeys<Keys>>(k: Keys, value: V): Record<Keys[ number ], ReturnType<V>>;
 
 export function makeObject<O extends {}, V extends MakeObjectObjHandler<O>>(obj: O, value: V): Record<keyof O, ReturnType<V>>;
 
@@ -149,9 +158,49 @@ export function makeObject(arg: Key[] | object | Constructor, value: (k: Key, va
     }, {} as any);
 }
 
-
 // getIfDefined({ a: 1, b: 2 }, 'a', 3); => 1
 // getIfDefined({ a: 1, b: 2 }, 'c', 3); => 3
 export const getIfDefined = <T extends {} | Arr<any>, K extends keyof T>(o: T, key: K, defaultValue: T[ K ] = undefined): T[ K ] => {
     return isDefinedProp(o, key) ? o[ key ] : defaultValue;
 };
+
+
+type PrimitiveRecursive<T> = {
+    [ K in keyof T ]: T[ K ] extends object ? PrimitiveRecursive<T[ K ]> : T[ K ]
+}[ keyof T ];
+
+type KeysRecursive<T> = keyof T | {
+    [ K in keyof T ]: T[ K ] extends object ? KeysRecursive<T[ K ]> : never
+}[ keyof T ];
+
+export const forEach = <T extends Arr<any> | {}>(o: T, callback: (key: KeysRecursive<T>, v: PrimitiveRecursive<T>) => void | 'stop'): void => {
+    let stop = false;
+
+    Object.entries(o).forEach(([ k, v ]) => {
+        if (stop)
+            return;
+
+        if (typeof v === 'object')
+            forEach(v, callback);
+        else {
+            const ret = callback(k as any, v as any);
+
+            if (ret === 'stop')
+                stop = true;
+        }
+    });
+};
+
+// forEach(o, (k, v) => { v === 'b1'; });
+
+export const reduce = <T extends Arr<any> | {}, R>(o: T, init: R, reducer: (current: R, key: KeysRecursive<T>, v: PrimitiveRecursive<T>) => R): R => {
+
+    return Object.entries(o).reduce((current, [ k, v ]) => {
+
+        const value = typeof v === 'object' ? reduce(v, init, reducer) : v;
+        return reducer(current, k as any, value as any);
+
+    }, init);
+};
+
+// reduce({ a: 1, b: { b1: 1, b2: 2, b3: { b11: 1 } }, c: { c1: 2 }, d: 3 } as const, 0, (current, k, v) => current + v) === 10;

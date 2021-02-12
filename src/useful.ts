@@ -1,5 +1,5 @@
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { PickType, Key, ExcludeKeysType, InferArrayType, PickType2, Arr, Function0 } from './type';
+import { Key, InferArrayType, Arr, Function0, TT } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -21,8 +21,8 @@ export function isErrorOf(e: any, errorCtor: (...args: []) => any) {
     return e instanceof errorCtor || e.constructor === errorCtor || e.name === errorCtor.name;
 }
 
-export function ensureArray<T>(v: T | T[]): T[] {
-    return isArray(v) ? v : isDefined(v) ? [ v ] : [];
+export function ensureArray<T extends TT<any>>(v: T): T extends Arr<any> ? T : T[] {
+    return (isArray(v) ? v : isDefined(v) ? [ v ] : []) as any;
 }
 
 
@@ -98,29 +98,6 @@ const valueIf2 = ifChained('test' as const)
     .value;
  */
 
-/* export type ReturnSelector<V> = { if: boolean, value: V; };
-export type Selector<D, V> = (data: D) => ReturnSelector<V>;
-
-export const select = <D, F = never>(data: D, finalValue: F = undefined, done: boolean = false) => ({
-    next: <V>(selector: Selector<D, V>) => {
-
-        if (done) {
-            const value = finalValue as F | V;
-            return { next: select(data, value, true).next, value };
-        }
-
-        const { if: iff, value } = selector(data);
-
-        return { next: select(data, value as F | V, iff).next, value: value as F | V };
-    }
-}); */
-
-
-/* const value = select('caca')
-    .next(data => ({ if: data === 'caCa', value: data }))
-    .next(data => ({ if: 1 === 1, value: true }))
-    .next(data => ({ if: 1 === 1, value: [ 1, 2, 3 ] }))
-    .value; */
 
 
 export const filterByType = <A extends Arr<any>, T extends InferArrayType<A>, V extends T[ K ], K extends Key = 'type'>(array: A, value: V, key: K = 'type' as any):

@@ -66,13 +66,18 @@ export type AnyFunction<R = any> = (...args: Arr<any>) => R;
 
 
 export type Constructor<P = any, I = object> = new (...input: P[]) => I;
+export type Constructor0<I = object> = new () => I;
 export type Constructor1<P1, I = object> = new (p1: P1) => I;
 export type Constructor2<P1, P2, I = object> = new (p1: P1, p2: P2) => I;
 export type Constructor3<P1, P2, P3, I = object> = new (p1: P1, p2: P2, p3: P3) => I;
 export type Constructor4<P1, P2, P3, P4, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4) => I;
 export type Constructor5<P1, P2, P3, P4, P5, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4, p5: P5) => I;
 
-export type TT<K> = K | K[];
+type Int = [ -1, 0, 1, 2, 3, 4, 5, 6 ];
+export type GetParam<F extends Function, N extends Int[ number ]> = N extends 1 ? F extends (arg: infer U, ...args: any[]) => any ? U : never : GetParam<F, Int[ N ]>;
+
+
+export type TT<K> = K | Arr<K>;
 
 export type TT$<K> = K | Promise<K>;
 
