@@ -1,5 +1,5 @@
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { Key, InferArrayType, Arr, Function0, TT } from './type';
+import { Key, InferArrayType, Arr, Function0, TT, FF } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -25,10 +25,18 @@ export function ensureArray<T extends TT<any>>(v: T): T extends Arr<any> ? T : T
     return (isArray(v) ? v : isDefined(v) ? [ v ] : []) as any;
 }
 
-
 export function ensurePromise<T>(v: T | Promise<T>): Promise<T> {
     return isPromise(v) ? v : Promise.resolve(v);
 }
+
+export function ensureFunction<T>(v: T): T extends (...args: any[]) => any ? T : never {
+    return typeof v === 'function' ? v as any : (...args: any[]) => v;
+}
+
+/* type F = ((data: number) => string) | string;
+const f: F = 'test';
+
+const ff = ensureFunction(f as F); */
 
 export const arrayN = (n: number) => Array(n).fill(0);
 
@@ -54,8 +62,9 @@ export const compose = <FN extends (...args: any[]) => any, V extends ReturnType
 /* export type ReturnSelector<V> = { if: boolean, value: V; };
 export type Selector<D, V> = (data: D) => ReturnSelector<V>; */
 
-export type ReturnIfSelector<T, E, N> = { if?: boolean, then: T; else?: E; next?: N; };
+export type ReturnIfSelector<T, E, N> = { if?: FF<boolean>, then: T; else?: E; next?: N; isValueFunction?: boolean; };
 export type IfSelector<T, E, N, D> = ((data?: D) => ReturnIfSelector<T, E, N>) | ReturnIfSelector<T, E, N>;
+
 
 export const ifChained = <D = never, F = never>(data: D = undefined, finalValue: F = undefined, done: boolean = false) => ({
     next: <T, E = never, N = never>(selector: IfSelector<T, E, N, D>) => {
@@ -71,14 +80,15 @@ export const ifChained = <D = never, F = never>(data: D = undefined, finalValue:
             isDone = true;
         } else {
 
-            const select = typeof selector === 'function' ? selector(data) : selector;
+            const select = ensureFunction(selector)(data);
 
-            const then = select.then;
-            const elsee = select.else;
+            const iff = ensureFunction(select.if)();
+            const then = select.isValueFunction ? select.then : ensureFunction(select.then)();
+            const elsee = isDefinedProp(select, 'else') ? select.isValueFunction ? select.else : ensureFunction(select.else)() : undefined;
 
-            value = select.if ? then : isDefinedProp(select, 'else') ? elsee : undefined;
+            value = iff ? then : elsee;
             nextData = isDefinedProp(select, 'next') ? select.next : data as any as N;
-            isDone = select.if || isDefinedProp(select, 'else');
+            isDone = iff || isDefinedProp(select, 'else');
         }
 
         return { next: ifChained(nextData, value, isDone).next, value };

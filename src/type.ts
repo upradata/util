@@ -81,6 +81,9 @@ export type TT<K> = K | Arr<K>;
 
 export type TT$<K> = K | Promise<K>;
 
+export type FF<T, Args extends [ any?, any?, any?, any?, any?, any?, ] = []> = T | ((...args: Args) => T);
+
+
 export type BuildType<Types, T> = {
     [ k in keyof Types ]: T;
 };
@@ -130,3 +133,5 @@ export type PickType2<O, T> = {
 export type ToString = { toString(): string; };
 
 export type Arr<T> = Array<T> | ReadonlyArray<T>;
+
+export type TupleSize<T extends Arr<any>> = T extends { length: infer N; } ? N : never;

@@ -1,12 +1,14 @@
 import { isDefinedProp, isPlainObject } from './is';
-import { Constructor, Constructor0, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr } from './type';
+import { Constructor, Constructor0, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr, TupleSize } from './type';
 
 
 // Same as Object.entries/keys/values but with better typing
 export const entries = <T extends {}>(o: T) => Object.entries(o) as [ keyof T, T[ keyof T ] ][];
 
 type KeyType<T> = T extends Constructor0 ? InstanceType<T> : T;
-export const keys = <T extends Constructor0 | {}>(o: T): [ keyof KeyType<T> ] => {
+// T extends T is to enable the distribution
+// for instance T = A | B | C => Array<keyof A | keyof B | keyof C> instead of Array<keyof (A | B | C)>
+export const keys = <T extends Constructor0 | {}>(o: T): T extends T ? Array<keyof KeyType<T>> : never => {
     return Object.keys((o as Constructor0).prototype ? new (<Constructor0>o)() : o) as any;
 };
 /* const k1 = keys({ a: 1, b: 2 });
@@ -60,7 +62,7 @@ export function toArray<O>(o: O, keyName?: Key): O[] {
 };
 
 
-// removeUndefined({ a: 1, b: 2, c: undefined as undefined, d: 2 }); => { a: 1, b: 2, d: 2; }
+// removeUndefined({ a: 1, b: 2, c: undefined as undefined, d: 2 }); => { a: 1, b: 2, d: 2; }streams
 export const removeUndefined = <O extends {}>(o: O): OmitType<O, undefined> => Object.fromEntries(entries(o).filter(([ _, v ]) => typeof v !== 'undefined')) as any;
 
 
@@ -157,6 +159,35 @@ export function makeObject(arg: Key[] | object | Constructor, value: (k: Key, va
         return o;
     }, {} as any);
 }
+
+
+
+type Indexes = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ];
+type Sizes_1 = [ -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ];
+
+type O<Keys extends Arr<Arr<Key>>, R, I extends number = 0> = {
+    [ Key in Keys[ I ][ number ] ]: TupleSize<Keys> extends 0 ? [] : I extends Sizes_1[ TupleSize<Keys> ] | 20 ? R : O<Keys, R, Indexes[ I ]>;
+};
+
+export const makeDeepObject = <Keys extends Arr<Arr<Key>>, R>(keys: Keys, value: (key: Keys[ Sizes_1[ TupleSize<Keys> ] ][ number ]) => R): O<Keys, R> => {
+    const make = (keys: Arr<Arr<Key>>) => {
+        const [ head, ...rest ] = keys;
+
+        const last = rest.length === 0;
+
+        return head.reduce((current, key) => ({
+            ...current,
+            [ key ]: last ? value(key) : make(rest)
+        }), {});
+    };
+
+    return make(keys);
+};
+
+/* const o = makeDeepObject([ [ 'a', 'b', 'c' ], [ 'a1', 'b2', 'c2' ] ] as const, k => `value ${k}` as const);
+const a = o.c.c2;
+a === 'value a1'; */
+
 
 // getIfDefined({ a: 1, b: 2 }, 'a', 3); => 1
 // getIfDefined({ a: 1, b: 2 }, 'c', 3); => 3
