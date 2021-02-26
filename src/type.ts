@@ -76,8 +76,12 @@ export type Constructor5<P1, P2, P3, P4, P5, I = object> = new (p1: P1, p2: P2, 
 type Int = [ -1, 0, 1, 2, 3, 4, 5, 6 ];
 export type GetParam<F extends Function, N extends Int[ number ]> = N extends 1 ? F extends (arg: infer U, ...args: any[]) => any ? U : never : GetParam<F, Int[ N ]>;
 
+export type VariableType = 'mutable' | 'readonly' | 'both';
 
-export type TT<K> = K | Arr<K>;
+export type Arr<T, Type extends VariableType = 'both'> = Type extends 'both' ? Array<T> | ReadonlyArray<T> : Type extends 'mutable' ? Array<T> : ReadonlyArray<T>;
+
+export type TT<K, Type extends VariableType = 'both'> = K | Arr<K, Type>;
+
 
 export type TT$<K> = K | Promise<K>;
 
@@ -131,7 +135,5 @@ export type PickType2<O, T> = {
 
 
 export type ToString = { toString(): string; };
-
-export type Arr<T> = Array<T> | ReadonlyArray<T>;
 
 export type TupleSize<T extends Arr<any>> = T extends { length: infer N; } ? N : never;
