@@ -137,3 +137,39 @@ export type PickType2<O, T> = {
 export type ToString = { toString(): string; };
 
 export type TupleSize<T extends Arr<any>> = T extends { length: infer N; } ? N : never;
+
+
+
+/*
+ https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir
+
+For optional properties, you can indeed detect them and therefore extract or exclude them. The insight here is that {} extends {a?: string}, but {} does not extend {a: string} or even {a: string | undefined}. Here's how you could build a way to remove optional properties from a type:
+*/
+
+export type RequiredKeys<T> = { [ K in keyof T ]-?:
+    ({} extends { [ P in K ]: T[ K ] } ? never : K)
+}[ keyof T ];
+
+export type OptionalKeys<T> = { [ K in keyof T ]-?:
+    ({} extends { [ P in K ]: T[ K ] } ? K : never)
+}[ keyof T ];
+
+export type RequiredProps<T> = Pick<T, RequiredKeys<T>>;
+export type OptionalProps<T> = Pick<T, OptionalKeys<T>>;
+
+/*
+type I3 = {
+    a: string,
+    b?: number,
+    c: boolean | undefined;
+};
+
+type I4 = ExcludeOptionalProps<I3>;
+{ a: string; c: boolean | undefined; }
+*/
+
+
+// Opposite of Partial
+export type Requirize<T> = {
+    [ P in keyof T ]-?: T[ P ];
+};

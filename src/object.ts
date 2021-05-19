@@ -23,8 +23,12 @@ export const values = <T extends RecordOf<any>>(o: T) => Object.values(o) as T[ 
 // => { key: 'a', v: 1; }
 export const fromKey = <O extends {}, K extends keyof O, V extends O[ K ]>(array: O[] | Readonly<O[]>, key: K, value: V): Extract<O, Record<K, V>> => array.find(el => el[ key ] === value) as any;
 
+export const findFromKey = fromKey;
+
 // fromKeyAll(arr, 'key' as const, 'a' as const); => [ { key: 'a', v: 1; }, { key: 'a', v: 3; } ]
 export const fromKeyAll = <O extends {}, K extends keyof O, V extends O[ K ]>(array: O[] | Readonly<O[]>, key: K, value: V): Extract<O, Record<K, V>>[] => array.filter(el => el[ key ] === value) as any;
+
+export const findFromKeyAll = fromKeyAll;
 
 
 // toObject([ { key: 'a' as const, v: 1 }, { key: 'b' as const, v: 2 } ], 'key', 'value') => { a: { key: 'a', v: 1 }, b: { key: 'b', v: 2 } };
@@ -62,8 +66,11 @@ export function toArray<O>(o: O, keyName?: Key): O[] {
 };
 
 
-// removeUndefined({ a: 1, b: 2, c: undefined as undefined, d: 2 }); => { a: 1, b: 2, d: 2; }streams
-export const removeUndefined = <O extends {}>(o: O): OmitType<O, undefined> => Object.fromEntries(entries(o).filter(([ _, v ]) => typeof v !== 'undefined')) as any;
+export type ObjectFilter<V> = (k: Key, v: V) => boolean;
+export const filter = <O extends {}>(o: O, filter: ObjectFilter<ValueOf<O>>): O => Object.fromEntries(entries(o).filter(([ k, v ]) => filter(k, v))) as any;
+
+// removeUndefined({ a: 1, b: 2, c: undefined as undefined, d: 2 }); => { a: 1, b: 2, d: 2; }
+export const removeUndefined = <O extends {}>(o: O): OmitType<O, undefined> => filter(o, (_, v) => typeof v !== 'undefined');
 
 
 // props = a.b.c.d for instance
@@ -119,15 +126,16 @@ export type FlatKeys<O extends {}, Depth extends number = 20> = ValueOf<{
 }[ Depth extends -1 ? "done" : "recur" ];
  */
 
+// const o = { a: 1, b: { b1: { b2: 2 } } }; => [ 'a', 'b.b1.b2' ];
+
 export const keysRecursive = <O extends {}>(o: O): FlatKeys<O> extends any ? string[] : FlatKeys<O>[] => entries(o).flatMap(([ k, v ]) => isPlainObject(v) ? keysRecursive<{}>(v).map(key => `${k}.${key}`) as any : [ k ]) as any;
 
 
-
 // create object from keys
-// makeObject([ 'a', 'b', 'c' ] as const, k => `value: ${k}` as const);
-// makeObject([ 'a', 'b', 'c' ] as const, k => ({ key: k, value: `value: ${k}` as const }))
-// makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${k}` as const);
-// makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${k}` as const);
+// makeObject([ 'a', 'b', 'c' ] as const, k => `value: ${ k }` as const);
+// makeObject([ 'a', 'b', 'c' ] as const, k => ({ key: k, value: `value: ${ k }` as const }))
+// makeObject({ a: 1, b: 2, c: 3 }, k => `value: ${ k }` as const);
+// makeObject(class { a: 1; b: 2; c: 3; }, k => `value: ${ k }` as const);
 // gives the same result => { a: 'value a', b: 'value b', c: 'value c' };
 
 type MakeObjectKlassHandler<Klass extends Constructor> = (key: keyof InstanceType<Klass>, value?: ValueOf<InstanceType<Klass>>, arg?: InstanceType<Klass>) => any;
@@ -160,6 +168,7 @@ export function makeObject(arg: Key[] | object | Constructor, value: (k: Key, va
     }, {} as any);
 }
 
+export const map = makeObject;
 
 
 type Indexes = [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ];
@@ -184,7 +193,7 @@ export const makeDeepObject = <Keys extends Arr<Arr<Key>>, R>(keys: Keys, value:
     return make(keys);
 };
 
-/* const o = makeDeepObject([ [ 'a', 'b', 'c' ], [ 'a1', 'b2', 'c2' ] ] as const, k => `value ${k}` as const);
+/* const o = makeDeepObject([ [ 'a', 'b', 'c' ], [ 'a1', 'b2', 'c2' ] ] as const, k => `value ${ k }` as const);
 const a = o.c.c2;
 a === 'value a1'; */
 
@@ -204,7 +213,7 @@ type KeysRecursive<T> = keyof T | {
     [ K in keyof T ]: T[ K ] extends object ? KeysRecursive<T[ K ]> : never
 }[ keyof T ];
 
-export const forEach = <T extends Arr<any> | {}>(o: T, callback: (key: KeysRecursive<T>, v: PrimitiveRecursive<T>) => void | 'stop'): void => {
+export const forEach = <T extends Arr<any> | {}>(o: T, callback: (key: KeysRecursive<T>, v: PrimitiveRecursive<T>) => void | 'stop', isRecursive: boolean = false): void => {
     let stop = false;
 
     Object.entries(o).forEach(([ k, v ]) => {
@@ -212,7 +221,7 @@ export const forEach = <T extends Arr<any> | {}>(o: T, callback: (key: KeysRecur
             return;
 
         if (typeof v === 'object')
-            forEach(v, callback);
+            forEach(v, callback, isRecursive);
         else {
             const ret = callback(k as any, v as any);
 
