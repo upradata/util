@@ -1,5 +1,5 @@
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { Key, InferArrayType, Arr, Function0, TT, FF } from './type';
+import { Key, InferArrayType, Arr, TT, FF } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -62,7 +62,7 @@ export const compose = <FN extends (...args: any[]) => any, V extends ReturnType
 /* export type ReturnSelector<V> = { if: boolean, value: V; };
 export type Selector<D, V> = (data: D) => ReturnSelector<V>; */
 
-export type ReturnIfSelector<T, E, N> = { if?: FF<boolean>, then: T; else?: E; next?: N; isValueFunction?: boolean; };
+export type ReturnIfSelector<T, E, N> = { if?: FF<boolean>, then: T; else?: E; next?: N; functionToCall?: boolean; };
 export type IfSelector<T, E, N, D> = ((data?: D) => ReturnIfSelector<T, E, N>) | ReturnIfSelector<T, E, N>;
 
 
@@ -83,8 +83,8 @@ export const ifChained = <D = never, F = never>(data: D = undefined, finalValue:
             const select = ensureFunction(selector)(data);
 
             const iff = ensureFunction(select.if)();
-            const then = select.isValueFunction ? select.then : ensureFunction(select.then)();
-            const elsee = isDefinedProp(select, 'else') ? select.isValueFunction ? select.else : ensureFunction(select.else)() : undefined;
+            const then = select.functionToCall ? ensureFunction(select.then)() : select.then;
+            const elsee = isDefinedProp(select, 'else') ? select.functionToCall ? ensureFunction(select.else)() : select.else : undefined;
 
             value = iff ? then : elsee;
             nextData = isDefinedProp(select, 'next') ? select.next : data as any as N;
@@ -110,28 +110,39 @@ const valueIf2 = ifChained('test' as const)
 
 
 
-export const filterByType = <A extends Arr<any>, T extends InferArrayType<A>, V extends T[ K ], K extends Key = 'type'>(array: A, value: V, key: K = 'type' as any):
+export const filterByKey = <A extends Arr<any>, T extends InferArrayType<A>, V extends T[ K ], K extends Key = 'type'>(array: A, value: V, key: K = 'key' as any):
     T extends { [ k in K ]: V } ? T[] : never => {
     return array.filter(v => v[ key ] === value) as any;
 };
 
-/* const a = filterByType([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', v: 11 }, { type: 'a', v: 111 }, { type: 'c', v: 3 } ] as const, 'a' as const);
+/* const a = filterByKey([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', v: 11 }, { type: 'a', v: 111 }, { type: 'c', v: 3 } ] as const, 'a' as const, 'type');
 const a0 = a[ 0 ];
 a0.type === 'a';
 a0.v === 11;
 
-const b = filterByType([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', v: 11 }, { type: 'a', v: 111 }, { type: 'c', v: 3 } ], 'a');
+const b = filterByKey([ { type: 'a', v: 1 }, { type: 'b', v: 2 }, { type: 'a', v: 11 }, { type: 'a', v: 111 }, { type: 'c', v: 3 } ], 'a', 'type');
  */
 
 
-export const firstTruthy = (...array: Array<any | Function0>): boolean => {
-    if (array.length === 0)
-        return false;
+export const firstTruthy = <T>(...array: Array<T>): any => {
+    const isFunction = (v: any): v is Function => typeof v === 'function' && v.length === 0;
 
-    const [ head, ...tail ] = array;
+    const first = (array: Array<T>): any => {
+        if (array.length === 0)
+            return false;
 
-    const isHeadFunction = typeof head === 'function' && head.length === 0;
-    const value = isHeadFunction ? head() : head;
+        const [ head, ...tail ] = array;
 
-    return value ? true : firstTruthy(...tail);
+        const value = isFunction(head) ? head() : head;
+
+        return !!value ? value : first(tail);
+    };
+
+    return first(array);
 };
+
+firstTruthy([ false, undefined, 1, 2 ]) === 1;
+firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour';
+
+
+export const arrayFromIterable = <T>(it: Iterable<T>): T[] => Array.isArray(it) ? it : [ ...it ];

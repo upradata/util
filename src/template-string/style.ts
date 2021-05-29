@@ -98,6 +98,10 @@ export class Style {
         return this.styleTemplate()`${s}`;
     }
 
+    get transform() {
+        return (s: string) => this.$$(s);
+    }
+
     private isArgsMode(mode: StyleMode) {
         return [ 'args', 'both' ].some(m => m === mode);
     }
@@ -145,8 +149,8 @@ export class Style {
 
 
 export const stringify = new Style({ flatten: recreateString });
-
+export const flattenStringStyle = stringify;
 
 export function style(...transforms: StyleOptions[ 'transforms' ]) {
-    return new Style({ transforms }).$;
+    return new Style({ transforms });
 }

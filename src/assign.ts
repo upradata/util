@@ -1,6 +1,6 @@
 import { objectToString } from './format-string';
-import { PlainObj, PartialRecursive } from './type';
-import { isDefined, isUndefined } from './is';
+import { PlainObj, PartialRecursive, Key } from './type';
+import { isDefined, isNil, isUndefined } from './is';
 
 
 
@@ -34,16 +34,19 @@ export class AssignOptions {
             }
         }
 
-        opts.nonRecursivelyAssignableTypes = [ RegExp ].concat(opts.nonRecursivelyAssignableTypes || []);
+        opts.nonRecursivelyAssignableTypes = [ RegExp, Date ].concat(opts.nonRecursivelyAssignableTypes || []);
 
         Object.assign(this, opts);
     }
 }
 
-function isAssignOptions(v: any): v is AssignOptions {
+const isAssignOptions = (v: any): v is AssignOptions => {
     return isDefined(v) && (v instanceof AssignOptions || v.isOption === true);
-}
+};
 
+
+// If an object is created like so Object.create(null), the prototype is null and not Object.prototype
+const hasOwnProperty = (o: object, prop: Key) => !isNil(Object.getPrototypeOf(o)) ? o.hasOwnProperty(prop) : prop in o;
 
 
 class Assign {
@@ -131,7 +134,7 @@ class Assign {
             for (const prop in inn) {
                 const isPropPrimitive = fromPrimitive || (prop in to) && typeof to[ prop ] !== 'object';
 
-                if ((assignMode === 'of' && inn.hasOwnProperty(prop) || assignMode === 'in')) {
+                if ((assignMode === 'of' && hasOwnProperty(inn, prop) || assignMode === 'in')) {
                     // recursion
                     if (this.isObjectOrArray(inn[ prop ]) && !this.lastLevel() && isRecAssignable(inn[ prop ])) { // array also
                         if (Array.isArray(inn[ prop ]) && arrayMode !== 'merge') {
