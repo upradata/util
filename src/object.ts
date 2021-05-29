@@ -1,6 +1,5 @@
-import { isUndefined } from 'ts-util-is';
 import { isDefined, isDefinedProp, isPlainObject } from './is';
-import { Constructor, Constructor0, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr, TupleSize, Typify, AnyFunction } from './type';
+import { Constructor, Constructor0, InferRecordType, Key, RecordOf, OmitType, ValueOf, Arr, TupleSize, AnyFunction } from './type';
 import { arrayFromIterable } from './useful';
 
 

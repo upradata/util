@@ -54,9 +54,16 @@ export const pipeline = <D>(data: D) => ({
     }
 });
 
-export const compose = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
-    return functions.reverse().reduce((current: ReturnType<FN>, fn) => fn(current), value);
+export const composeLeft = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
+    return functions.reduce((current: ReturnType<FN>, fn) => fn(current), value);
 };
+
+export const compose = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
+    return composeLeft(functions.reverse(), value);
+};
+
+export const composeRight = compose;
+
 
 
 /* export type ReturnSelector<V> = { if: boolean, value: V; };
