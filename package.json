@@ -29,7 +29,7 @@
         "postbuild": "npm run test && npm run e2e",
         "build:only": "npm run prebuild && tsc && tsc -m es6 --outDir lib-esm",
         "build:watch": "npm run tsc -w",
-        "github-push": "npm run build && npm version patch && git push && git push --tags",
+        "github-push": "npm run build && npm version patch && git pushall && git pushall-tags",
         "npm-publish": "npm run build && npm publish --access public"
     },
     "devDependencies": {
