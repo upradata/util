@@ -1,5 +1,6 @@
+import { AssignOptions, assignRecursive } from './assign';
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { Key, InferArrayType, Arr, TT, FF } from './type';
+import { Key, InferArrayType, Arr, TT, FF, AnyFunction } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
@@ -102,6 +103,8 @@ export const ifChained = <D = never, F = never>(data: D = undefined, finalValue:
     }
 });
 
+export const ifThen = ifChained;
+
 /* const valueIf = ifChained()
     .next(() => ({ if: 'caca' === 'caCa', then: 'caca' }))
     .next({ if: 1 === 1, then: true })
@@ -153,3 +156,6 @@ firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour';
 
 
 export const arrayFromIterable = <T>(it: Iterable<T>): T[] => Array.isArray(it) ? it : [ ...it ];
+
+
+export const deepCopy = <O extends {}>(o: O, options?: AssignOptions) => assignRecursive({}, o, options);
