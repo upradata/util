@@ -1,10 +1,10 @@
 # @upradata/util
-Browser Utilities
+Set of Typescript Utilities
 
 ## A bunch of utilities in typescript
 
-Look at [Node Utilities](https://www.npmjs.com/package/@upradata/node-util), for util stuff working only on Node
-Look at [Browser Utilities](https://www.npmjs.com/package/@upradata/browser-util), for util stuff working only on Browser
+Look at [Node Utilities](https://www.npmjs.com/package/@upradata/node-util), for util sworking only on Node
+Look at [Browser Utilities](https://www.npmjs.com/package/@upradata/browser-util), for util stuff working only on Browser 
 
 - assignRecursive, assignDefaultOption
   
