@@ -173,3 +173,7 @@ type I4 = ExcludeOptionalProps<I3>;
 export type Requirize<T> = {
     [ P in keyof T ]-?: T[ P ];
 };
+
+
+// https://github.com/microsoft/TypeScript/issues/23182
+export type IsNeverType<T> = [ T ] extends [ never ] ? true : never;
