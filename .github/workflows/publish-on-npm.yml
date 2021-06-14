@@ -52,12 +52,7 @@ jobs:
                   version: 6.7.6
                   run_install: true
 
-              # Runs pnpm install and then build
-
-            - name: Pnpm install
-              uses: creepinson/pnpm-action@master
-              with:
-                  arguments: '["install"]'
+              # Runs pnpm install
 
             - name: Pnpm Build
               uses: creepinson/pnpm-action@master
