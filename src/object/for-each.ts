@@ -10,7 +10,7 @@ export const forEach = <T extends Arr<any> | {}>(o: T, callback: (key: KeysRecur
             return;
 
         if (typeof v === 'object')
-            forEach(v, callback, isRecursive);
+            forEach(v, callback as any /* to avoid Type instantiation is excessively deep */, isRecursive);
         else {
             const ret = callback(k as any, v as any);
 

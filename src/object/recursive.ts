@@ -35,10 +35,19 @@ export class FlattenObjectOption {
 export const keysRecursive = <O extends {}>(o: O, option?: FlattenObjectOption): ConcatenatedKeysRecursive<O> => {
     const { mergeKeys, nbLevels } = Object.assign(new FlattenObjectOption(), option);
 
-    const keys = <U>(o: U): ConcatenatedKeysRecursive<U> => {
+    /* const keys = <U>(o: U): ConcatenatedKeysRecursive<U> => {
         return entries(o).flatMap(([ k, v ], level) => {
             if (isPlainObject(v) && level + 1 !== nbLevels)
                 return keys<{}>(v).map(key => mergeKeys(k, key));
+
+            return [ mergeKeys(k, undefined) ];
+        }) as any;
+    }; */
+
+    const keys = (o: {}): ConcatenatedKeysRecursive<O> => {
+        return entries(o).flatMap(([ k, v ], level) => {
+            if (isPlainObject(v) && level + 1 !== nbLevels)
+                return keys(v).map(key => mergeKeys(k, key));
 
             return [ mergeKeys(k, undefined) ];
         }) as any;
