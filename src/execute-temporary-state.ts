@@ -1,5 +1,5 @@
-import type { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+/* import type { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators'; */
 import { PlainObj } from './type';
 
 export interface State {
@@ -52,8 +52,8 @@ export class ExecuteOnTempState {
 
         // if (r instanceof Observable)
         // I do not want to load rxjs just for this, so I use a small hack even though instanceof is better
-        if (r.constructor.name === 'Observable')
-            return (r as Observable<any>).pipe(tap(ret => this.backAndReturn(ret))) as any as R;
+        // if (r.constructor.name === 'Observable')
+        //     return (r as Observable<any>).pipe(tap(ret => this.backAndReturn(ret))) as any as R;
 
         return this.backAndReturn(r);
     }
