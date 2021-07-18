@@ -1,5 +1,5 @@
-import isFullwidthCodePoint from 'is-fullwidth-code-point';
 import emojiRegex from 'emoji-regex';
+import isFullwidthCodePoint from './is-fullwidth-code-point';
 
 // ANSI escapes are the terminal codes to add color/bell, ...
 // https://en.wikipedia.org/wiki/ANSI_escape_code

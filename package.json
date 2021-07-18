@@ -48,7 +48,6 @@
         "common-tags": "^1.8.0",
         "emoji-regex": "^9.2.2",
         "find-up": "^5.0.0",
-        "is-fullwidth-code-point": "^4.0.0",
         "ts-util-is": "^1.2.1"
     },
     "keywords": [
