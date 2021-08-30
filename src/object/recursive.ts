@@ -72,7 +72,8 @@ export const setRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<
     if (typeof key === 'string') {
 
         (key as string).split('.').reduce((obj, p, i, arr) => {
-            return obj[ p ] = i === arr.length - 1 ? value : obj[ p ] || {};
+            obj[ p ] = i === arr.length - 1 ? value : obj[ p ] || {};
+            return obj[ p ];
         }, o);
 
     } else {

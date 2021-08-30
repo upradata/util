@@ -16,15 +16,7 @@
         "target": "ESNext",
         "traceResolution": false,
         "baseUrl": ".",
-        "paths": {
-            /*  "@root/*": [
-                "./src/*"
-            ] */ /* ,
-            "*": [
-                "./node_modules",
-                "src/typings/*"
-            ] */ // https://github.com/microsoft/TypeScript/issues/13581#issuecomment-273923793
-        },
+        "paths": {},
         "typeRoots": [
             "src/@types",
             "node_modules/@types"

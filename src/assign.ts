@@ -1,13 +1,16 @@
+/* eslint-disable no-redeclare */
 import { objectToString } from './format-string';
-import { PlainObj, PartialRecursive, Key } from './type';
+import { PlainObj, PartialRecursive, Key, Constructor } from './type';
 import { isDefined, isNil, isUndefined } from './is';
-
 
 
 export type AssignMode = 'of' | 'in';
 export type ArrayMode = 'merge' | 'replace' | 'concat';
 
-export type AssignOpts = Partial<Omit<AssignOptions, 'onlyExistingProp'> & { onlyExistingProp: boolean | { level: number; }; }>;
+export type AssignOpts = Partial<Omit<AssignOptions, 'onlyExistingProp' | 'nonRecursivelyAssignableTypes'> & {
+    onlyExistingProp: boolean | { level: number; };
+    nonRecursivelyAssignableTypes: Iterable<Constructor>;
+}>;
 
 export class AssignOptions {
     assignMode: AssignMode = 'of';
@@ -17,7 +20,7 @@ export class AssignOptions {
     props: (string | symbol)[] = undefined;
     except: (string | symbol)[] = undefined;
     transform: (key: string | symbol, value: any) => any = undefined;
-    nonRecursivelyAssignableTypes: any[];
+    nonRecursivelyAssignableTypes: Set<Constructor>;
     isOption: boolean = true;
 
     constructor(options: AssignOpts = {}) {
@@ -30,15 +33,16 @@ export class AssignOptions {
 
                 opts.onlyExistingProp = { level: Infinity };
             } else {
-                opts.onlyExistingProp = Object.assign({ level: Infinity }, opts.onlyExistingProp);
+                opts.onlyExistingProp = { level: Infinity, ...opts.onlyExistingProp };
             }
         }
 
-        opts.nonRecursivelyAssignableTypes = [ RegExp, Date ].concat(opts.nonRecursivelyAssignableTypes || []);
+        opts.nonRecursivelyAssignableTypes = new Set([ RegExp, Date, ...(opts.nonRecursivelyAssignableTypes || []) ]);
 
         Object.assign(this, opts);
     }
 }
+
 
 const isAssignOptions = (v: any): v is AssignOptions => {
     return isDefined(v) && (v instanceof AssignOptions || v.isOption === true);
@@ -46,7 +50,9 @@ const isAssignOptions = (v: any): v is AssignOptions => {
 
 
 // If an object is created like so Object.create(null), the prototype is null and not Object.prototype
-const hasOwnProperty = (o: object, prop: Key) => !isNil(Object.getPrototypeOf(o)) ? o.hasOwnProperty(prop) : prop in o;
+const hasOwnProperty = (o: object, prop: Key) => {
+    return !isNil(Object.getPrototypeOf(o)) ? Object.prototype.hasOwnProperty.call(o, prop) : prop in o;
+};
 
 
 class Assign {
@@ -55,11 +61,11 @@ class Assign {
     private currentlevel: number;
 
     constructor(private out: PlainObj, private ins: PlainObj[], options?: AssignOpts) {
-        this.options = new AssignOptions(options);
+        this.options = options instanceof AssignOptions ? options : new AssignOptions(options);
     }
 
     private lastLevel() {
-        return !isNaN(this.options.depth) && this.options.depth === 1;
+        return !Number.isNaN(this.options.depth) && this.options.depth === 1;
     }
 
     private isObjectOrArray(e: any) {
@@ -125,12 +131,14 @@ class Assign {
         const to = typeof out === 'object' ? out : {};
         const isPrimitive = fromPrimitive || typeof out !== 'object';
 
-        const isRecAssignable = (v: any) => !nonRecursivelyAssignableTypes.some(type => typeof v === type || v.constructor === type);
+        const isRecAssignable = (v: any) => ![ ...nonRecursivelyAssignableTypes ].some(ctor => v instanceof ctor);
+        /*  typeof v === type || */ /* v.constructor === type */
 
         for (const inn of ins) {
             if (inn === undefined || inn === null)
                 continue;
 
+            // eslint-disable-next-line guard-for-in
             for (const prop in inn) {
                 const isPropPrimitive = fromPrimitive || (prop in to) && typeof to[ prop ] !== 'object';
 
@@ -149,11 +157,11 @@ class Assign {
                             }
                         } else {
                             const defaultTo = Array.isArray(inn[ prop ]) ? [] : {};
-                            const option = { ...this.options, depth: depth - 1 };
+                            const options = { ...this.options, depth: depth - 1 };
 
                             this.assignProp(prop,
                                 to,
-                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], option).assignRecursive(currentLevel + 1, isPrimitive || typeof to[ prop ] !== 'object'),
+                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], options).assignRecursive(currentLevel + 1, isPrimitive || typeof to[ prop ] !== 'object'),
                                 isPropPrimitive
                             );
                         }

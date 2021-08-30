@@ -6,7 +6,8 @@ export type RecordOf<T = any> = Record<Key, T>;
 
 export interface ObjectOf<T> {
     [ K: string ]: T;
-};
+    [ K: number ]: T;
+}
 
 export type InferRecordType<O> = O extends { [ K in Key ]: infer U; } ? U : never;
 export type InferArrayType<A> = A extends Arr<infer U> ? U : never;
@@ -28,7 +29,7 @@ type PartialRec<T> = {
 
 // https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript-2-1
 // more compact than mine
-/*export type PartialRecursive<T> = {
+/* export type PartialRecursive<T> = {
     [ K in keyof T ]?:
     T[ K ] extends (infer U)[] ? T[ K ] :
     T[ K ] extends object ? PartialRecursiveWithArray<T[ K ]> :
@@ -143,7 +144,8 @@ export type TupleSize<T extends Arr<any>> = T extends { length: infer N; } ? N :
 /*
  https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir
 
-For optional properties, you can indeed detect them and therefore extract or exclude them. The insight here is that {} extends {a?: string}, but {} does not extend {a: string} or even {a: string | undefined}. Here's how you could build a way to remove optional properties from a type:
+For optional properties, you can indeed detect them and therefore extract or exclude them. 
+The insight here is that {} extends {a?: string}, but {} does not extend {a: string} or even {a: string | undefined}. Here's how you could build a way to remove optional properties from a type:
 */
 
 export type RequiredKeys<T> = { [ K in keyof T ]-?:
@@ -175,5 +177,22 @@ export type Requirize<T> = {
 };
 
 
+export type IfThenElse<T extends boolean, U, V = never> = T extends true ? U : V;
+
+export type Is<T, U> = T extends U ? true : false;
+
+export type Or<T, U> = T extends true ? true : U extends true ? true : false;
+
+export type And<T, U> = T extends true ? U extends true ? true : false : false;
+
+
+
+
 // https://github.com/microsoft/TypeScript/issues/23182
-export type IsNeverType<T> = [ T ] extends [ never ] ? true : never;
+// Just for the example. To make it work, it has to be placed directly when necessary
+// export type IsNeverType<T> = [ T ] extends [ never ] ? true : never;
+
+
+// https://github.com/microsoft/TypeScript/issues/29368
+// Just for the example. To make it work, it has to be placed directly when necessary
+// export type NoDistribute<T> = [ T ] extends [ T ] ? T : never;

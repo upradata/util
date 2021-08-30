@@ -24,7 +24,7 @@
             "sourceMaps": true,
             "cwd": "${workspaceRoot}",
             "protocol": "inspector",
-            "runtimeExecutable": "/home/milottit/.nvm/versions/node/v12.7.0/bin/node"
+            "runtimeExecutable": "/home/milottit/.nvm/versions/node/v15.9.0/bin/node"
         },
         {
             "name": "Current JS File",
