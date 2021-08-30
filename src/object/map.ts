@@ -1,4 +1,5 @@
-import { Constructor, ValueOf, Arr, Key, AnyFunction } from '../type';
+import { Constructor, AnyFunction } from '../function';
+import { ValueOf, Arr, Key } from '../type';
 
 
 // create object from keys

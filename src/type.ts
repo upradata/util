@@ -45,7 +45,7 @@ export type PartialRecursiveWithArray<T> = {
 
 export type PartialRecursive<T> = {
     [ K in keyof T ]?:
-    T[ K ] extends (infer U)[] ? T[ K ] :
+    T[ K ] extends unknown[] ? T[ K ] :
     T[ K ] extends object ? PartialRecursive<T[ K ]> :
     T[ K ];
 };
@@ -57,29 +57,21 @@ export type RecordRecursive<O extends {}, Type> = {
 
 
 
-export type Function0<R = any> = () => R;
-export type Function1<Arg1, R = any> = (arg1: Arg1) => R;
-export type Function2<Arg1, Arg2, R = any> = (arg1: Arg1, arg2: Arg2) => R;
-export type Function3<Arg1, Arg2, Arg3, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3) => R;
-export type Function4<Arg1, Arg2, Arg3, Arg4, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4) => R;
-export type Function5<Arg1, Arg2, Arg3, Arg4, Arg5, R = any> = (arg1: Arg1, arg2: Arg2, arg3: Arg3, arg4: Arg4, arg5: Arg5) => R;
-export type AnyFunction<R = any> = (...args: Arr<any>) => R;
 
 
-export type Constructor<P = any, I = object> = new (...input: P[]) => I;
-export type Constructor0<I = object> = new () => I;
-export type Constructor1<P1, I = object> = new (p1: P1) => I;
-export type Constructor2<P1, P2, I = object> = new (p1: P1, p2: P2) => I;
-export type Constructor3<P1, P2, P3, I = object> = new (p1: P1, p2: P2, p3: P3) => I;
-export type Constructor4<P1, P2, P3, P4, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4) => I;
-export type Constructor5<P1, P2, P3, P4, P5, I = object> = new (p1: P1, p2: P2, p3: P3, p4: P4, p5: P5) => I;
+// because typescript complains if it can be an infinite recursion => we max out to 20 levels of recurrsion
+// (array.prototype.flat is doing so also => see ts definition)
+export type Levels = [ -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ];
 
-type Int = [ -1, 0, 1, 2, 3, 4, 5, 6 ];
-export type GetParam<F extends Function, N extends Int[ number ]> = N extends 1 ? F extends (arg: infer U, ...args: any[]) => any ? U : never : GetParam<F, Int[ N ]>;
+
+export type GetParam<F extends Function, N extends Levels[ number ]> = N extends 1 ?
+    F extends (arg: infer U, ...args: any[]) => any ? U : never :
+    GetParam<F, Levels[ N ]>;
+
 
 export type VariableType = 'mutable' | 'readonly' | 'both';
 
-export type Arr<T, Type extends VariableType = 'both'> = Type extends 'both' ? Array<T> | ReadonlyArray<T> : Type extends 'mutable' ? Array<T> : ReadonlyArray<T>;
+export type Arr<T = unknown, Type extends VariableType = 'both'> = Type extends 'both' ? Array<T> | ReadonlyArray<T> : Type extends 'mutable' ? Array<T> : ReadonlyArray<T>;
 
 export type TT<K, Type extends VariableType = 'both'> = K | Arr<K, Type>;
 
@@ -129,7 +121,7 @@ export type OmitType<T, OmitType> = Pick<T, ExcludeKeysType<T, OmitType>>;
 export type PickType<T, OmitType> = Omit<T, ExcludeKeysType<T, OmitType>>;
 
 // It is less good this implementation because unpicked keys are not deleted but are with type "never"
-export type PickType2<O, T> = {
+export type PickTypeWithNever<O, T> = {
     [ K in keyof O ]: Extract<O[ K ], T>
 };
 
@@ -144,7 +136,7 @@ export type TupleSize<T extends Arr<any>> = T extends { length: infer N; } ? N :
 /*
  https://stackoverflow.com/questions/49579094/typescript-conditional-types-filter-out-readonly-properties-pick-only-requir
 
-For optional properties, you can indeed detect them and therefore extract or exclude them. 
+For optional properties, you can indeed detect them and therefore extract or exclude them.
 The insight here is that {} extends {a?: string}, but {} does not extend {a: string} or even {a: string | undefined}. Here's how you could build a way to remove optional properties from a type:
 */
 

@@ -1,9 +1,5 @@
 
-import { NonObject, ValueOf } from '../type';
-
-// because typescript complains if it can be an infinite recursion => we max out to 20 levels of recurrsion
-// (array.prototype.flat is doing so also => see ts definition)
-export type Levels = [ -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 ];
+import { NonObject, ValueOf, Levels } from '../type';
 
 
 /* export type PrimitiveRecursive<T> = {

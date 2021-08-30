@@ -1,7 +1,8 @@
 /* eslint-disable no-redeclare */
 import { objectToString } from './format-string';
-import { PlainObj, PartialRecursive, Key, Constructor } from './type';
+import { PlainObj, PartialRecursive, Key } from './type';
 import { isDefined, isNil, isUndefined } from './is';
+import { Constructor } from './function';
 
 
 export type AssignMode = 'of' | 'in';

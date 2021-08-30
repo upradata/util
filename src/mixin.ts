@@ -1,4 +1,4 @@
-import { Constructor, AnyFunction } from './type';
+import { Constructor, AnyFunction } from './function';
 
 // =====> https://github.com/bryntum/chronograph/blob/master/src/class/Mixin.ts <=====
 
@@ -38,10 +38,10 @@ export type BaseAnyConstructor = typeof Base;
 
 
 // ---------------------------------------------------------------------------------------------------------------------
-export type AnyConstructor<A> = Constructor<any, A>;
+type AnyConstructor<A> = Constructor<any[], A>;
 
 // ---------------------------------------------------------------------------------------------------------------------
-export type Mixin<T extends AnyFunction> = InstanceType<ReturnType<T>>;
+export type Mixin<T extends AnyFunction<any>> = InstanceType<ReturnType<T>>;
 
 export type MixinAnyConstructor<T extends AnyFunction> =
     T extends AnyFunction<infer M> ? (M extends AnyConstructor<Base> ? M & BaseAnyConstructor : M) : ReturnType<T>;

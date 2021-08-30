@@ -1,8 +1,10 @@
 import { AssignOptions, assignRecursive } from './assign';
+import { Constructor } from './function';
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { Key, InferArrayType, Arr, TT, FF, AnyFunction } from './type';
+import { Key, InferArrayType, Arr, TT, FF } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
+// Now it is not necessary anymore with o?.a syntax
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
     try {
         /* const val = exp();
@@ -18,7 +20,7 @@ export function chain<T>(exp: () => T, defaultValue: T = undefined) {
 }
 
 
-export function isErrorOf(e: any, errorCtor: (...args: []) => any) {
+export function isErrorOf(e: any, errorCtor: Constructor) {
     return e instanceof errorCtor || e.constructor === errorCtor || e.name === errorCtor.name;
 }
 
@@ -31,7 +33,7 @@ export function ensurePromise<T>(v: T | Promise<T>): Promise<T> {
 }
 
 export function ensureFunction<T>(v: T): T extends (...args: any[]) => any ? T : never {
-    return typeof v === 'function' ? v as any : (...args: any[]) => v;
+    return typeof v === 'function' ? v as any : (..._args: any[]) => v;
 }
 
 /* type F = ((data: number) => string) | string;
@@ -41,36 +43,11 @@ const ff = ensureFunction(f as F); */
 
 export const arrayN = (n: number) => Array(n).fill(0);
 
-export const repeatChained = <T>(func: (value: T, i?: number) => T, n: number, init: T): T => {
-    return arrayN(n).map(i => func).reduce((lastReturn, f, i) => f(lastReturn, i), init);
-};
-
-
-export type Next<D, N> = (data: D) => N;
-
-export const pipeline = <D>(data: D) => ({
-    pipe: <N>(next: Next<D, N>) => {
-        const ret = next(data);
-        return { pipe: pipeline(ret).pipe, value: ret };
-    }
-});
-
-export const composeLeft = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
-    return functions.reduce((current: ReturnType<FN>, fn) => fn(current), value);
-};
-
-export const compose = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
-    return composeLeft(functions.reverse(), value);
-};
-
-export const composeRight = compose;
-
-
 
 /* export type ReturnSelector<V> = { if: boolean, value: V; };
 export type Selector<D, V> = (data: D) => ReturnSelector<V>; */
 
-export type ReturnIfSelector<T, E, N> = { if?: FF<boolean>, then: T; else?: E; next?: N; functionToCall?: boolean; };
+export type ReturnIfSelector<T, E, N> = { if?: FF<boolean>; then: T; else?: E; next?: N; functionToCall?: boolean; };
 export type IfSelector<T, E, N, D> = ((data?: D) => ReturnIfSelector<T, E, N>) | ReturnIfSelector<T, E, N>;
 
 
@@ -145,17 +122,18 @@ export const firstTruthy = <T>(...array: Array<T>): any => {
 
         const value = isFunction(head) ? head() : head;
 
+        // eslint-disable-next-line no-extra-boolean-cast
         return !!value ? value : first(tail);
     };
 
     return first(array);
 };
 
-firstTruthy([ false, undefined, 1, 2 ]) === 1;
-firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour';
+/* firstTruthy([ false, undefined, 1, 2 ]) === 1;
+firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour'; */
 
 
 export const arrayFromIterable = <T>(it: Iterable<T>): T[] => Array.isArray(it) ? it : [ ...it ];
 
 
-export const deepCopy = <O extends {}>(o: O, options?: AssignOptions) => assignRecursive({}, o, options);
+export const deepCopy = <O extends object>(o: O, options?: AssignOptions) => assignRecursive({}, o, options);
