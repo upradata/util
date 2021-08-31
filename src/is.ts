@@ -2,9 +2,9 @@
 // export * is not support by rollup with commonjs :(((
 export {
     isArray, isBase64, isBoolean, isDate, isDateValid, isDefined, isError, isFunction, isGuid, isInfinity, isNull, isNumber, isObject, isPlainObject, isRegExp, isString, isSymbol, isUndefined
-} from 'ts-util-is';
+} from './node-modules-esm/ts-util-is';
 
-import { isUndefined, isNull, isDefined } from 'ts-util-is';
+import { isUndefined, isNull, isDefined } from './node-modules-esm/ts-util-is';
 
 
 // MDN Polyfill

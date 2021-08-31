@@ -54,6 +54,7 @@ export class ExecuteOnTempState {
         // I do not want to load rxjs just for this, so I use a small hack even though instanceof is better
         // if (r.constructor.name === 'Observable')
         //     return (r as Observable<any>).pipe(tap(ret => this.backAndReturn(ret))) as any as R;
+        // FINALLY, I removed it. If someone wants to use an Observable, it is possible to convert an Observable to a Promise
 
         return this.backAndReturn(r);
     }
