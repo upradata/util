@@ -1,10 +1,10 @@
-type AsyncFunc = () => Promise<any>;
+type AsyncFunc<T> = () => Promise<T>;
 
-export class Pool {
+export class PromisePool<T = unknown> {
     public size: number;
-    private result = new Map<number, AsyncFunc>();
-    private pool = new Map<AsyncFunc, any /* return value */>();
-    private queue: AsyncFunc[] = [];
+    private result = new Map<number, T>();
+    private pool = new Map<AsyncFunc<T>, Promise<void> /* return value */>();
+    private queue: AsyncFunc<T>[] = [];
     private i: number = -1;
     private isDoneCalled: boolean = false;
     private resolve: Function;
@@ -18,7 +18,7 @@ export class Pool {
             this.resolve();
     }
 
-    public execute(asyncFunc: AsyncFunc) {
+    public execute(asyncFunc: AsyncFunc<T>) {
         this.queue.push(asyncFunc);
         this.next();
     }
@@ -28,7 +28,7 @@ export class Pool {
             const asyncFunc = this.queue.pop();
 
             ++this.i;
-            const i = this.i;
+            const { i } = this;
 
             this.pool.set(asyncFunc,
                 asyncFunc().then(res => {
@@ -44,22 +44,19 @@ export class Pool {
         }
     }
 
-    public done() {
+    public done(): Promise<T[]> {
         this.isDoneCalled = true;
 
-        return new Promise((res, rej) => {
+        return new Promise<T[]>((res, _rej) => {
             this.resolve = () => {
-                const resultArrayInOrder = [];
-                for (const [ i, v ] of this.result)
-                    resultArrayInOrder[ i ] = v;
-
-                res(resultArrayInOrder);
+                // result in order
+                res([ ...this.result.values() ]);
             };
         });
     }
 }
 
-/* const pool = new Pool();
+/* const pool = new PromisePool();
 
 function wait(i, ms) {
     return new Promise((res, rej) => {

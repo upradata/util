@@ -9,7 +9,7 @@
         "url": "https://github.com/upradata/util"
     },
     "license": "MIT",
-    "version": "12.0.5",
+    "version": "13.0.1",
     "description": "Set of typescript util tools working in Web runtime",
     "sideEffects": false,
     "main": "lib",

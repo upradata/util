@@ -7,10 +7,6 @@ import { Key, InferArrayType, Arr, TT, FF } from './type';
 // Now it is not necessary anymore with o?.a syntax
 export function chain<T>(exp: () => T, defaultValue: T = undefined) {
     try {
-        /* const val = exp();
-        if (val != null) {
-            return val;
-        } */
         return exp();
     } catch (e) {
         if (!(isErrorOf(e, ReferenceError) || isErrorOf(e, TypeError)))

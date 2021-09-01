@@ -8,7 +8,7 @@ export * from './guid';
 export * from './is';
 export * from './mixin';
 export * from './object';
-export * from './pool';
+export * from './promise-pool';
 export * from './promise';
 export * from './random';
 export * from './regex';

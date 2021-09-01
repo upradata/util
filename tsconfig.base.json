@@ -16,14 +16,7 @@
         "target": "ESNext",
         "traceResolution": false,
         "baseUrl": ".",
-        "paths": {
-            "@esm/ts-util-is/*": [
-                "src/node-modules-esm/ts-util-is/*"
-            ],
-            "@esm/ts-util-is": [
-                "src/node-modules-esm/ts-util-is"
-            ]
-        },
+        "paths": {},
         "typeRoots": [
             "src/@types",
             "node_modules/@types"
