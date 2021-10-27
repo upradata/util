@@ -61,14 +61,14 @@ export const keysRecursive = <O extends {}>(o: O, option?: FlattenObjectOption):
 // props = a.b.c.d for instance
 // getRecursive(o, props) => get o.a.b.c.d
 // if prop does not exist, return undefined
-export const getRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<O>) => {
+export const getRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<O> | string) => {
     return typeof key === 'string' ? (key as string).split('.').reduce((obj, p) => obj?.[ p ], o) : o[ key as any ];
 };
 
 
 // setRecursive(o, props, value) sets o.a.b.c.d = value
 // if a prop does not exist, it is created as {}
-export const setRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<O>, value: any): O => {
+export const setRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<O> | string, value: any): O => {
     if (typeof key === 'string') {
 
         (key as string).split('.').reduce((obj, p, i, arr) => {

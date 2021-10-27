@@ -60,11 +60,13 @@
 			"@upradata/browser-util": "/home/milottit/Libraries/Upra-Data/browser-util",
 			"@upradata/decorator": "/home/milottit/Libraries/Upra-Data/decorators",
 			"@upradata/express": "/home/milottit/Libraries/Upra-Data/express",
-			"@upradata/stream": "/home/milottit/Libraries/Upra-Data/stream",
+			"@upradata/stream": "/home/milottit/Libraries/Upra-Data/stream-html",
 			"@upradata/object-convert": "/home/milottit/Libraries/Upra-Data/object-convert",
 			"@upradata/proxy": "/home/milottit/Libraries/Upra-Data/proxy",
 			"@upradata/puppeteer": "/home/milottit/Libraries/Upra-Data/puppeteer",
-			"@upradata/rxjs": "/home/milottit/Libraries/Upra-Data/rxjs"
+			"@upradata/rxjs": "/home/milottit/Libraries/Upra-Data/rxjs",
+			"@upradata/tilda-tools": "/home/milottit/Libraries/Tilda/tools",
+			"@upradata/stream-image": "/home/milottit/Libraries/Upra-Data/stream-image"
 		}
 	}
 }
