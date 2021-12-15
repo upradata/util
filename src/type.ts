@@ -188,3 +188,32 @@ export type And<T, U> = T extends true ? U extends true ? true : false : false;
 // https://github.com/microsoft/TypeScript/issues/29368
 // Just for the example. To make it work, it has to be placed directly when necessary
 // export type NoDistribute<T> = [ T ] extends [ T ] ? T : never;
+
+
+
+// export type Camelize<S extends string, delimiter extends string = '.'> = S extends `${infer U}${delimiter}${infer V}` ? `${Lowercase<U>}-${Camelize<V>}` : Lowercase<S>;
+export type AlphabetLower = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' | 'i' | 'j' | 'k'
+    | 'l' | 'm' | 'n' | 'o' | 'p' | 'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x'
+    | 'y' | 'z';
+
+export type AlphabetUpper = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' | 'J' | 'K'
+    | 'L' | 'M' | 'N' | 'O' | 'P' | 'Q' | 'R' | 'S' | 'T' | 'U' | 'V' | 'W' | 'X'
+    | 'Y' | 'Z';
+
+export type Numbers = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
+
+
+// https://ghaiklor.github.io/type-challenges-solutions/en/medium-kebabcase.html
+// S extends `${infer C}${infer T}` allows to get the [head, tail] with head=first letter and tail=the rest :))
+export type KebabCase<S> = S extends `${infer Char}${infer Rest}`
+    // 2 cases: 1) rest=ab... 2) we have rest=Ab....
+    ? Rest extends Uncapitalize<Rest> ? `${Uncapitalize<Char>}${KebabCase<Rest>}` : `${Uncapitalize<Char>}-${KebabCase<Rest>}`
+    : S;
+
+// https://ghaiklor.github.io/type-challenges-solutions/en/medium-camelcase.html
+export type CamelCase<S> = S extends `${infer Char}-${infer Rest}`
+    ? Rest extends Capitalize<Rest> ? `${Char}-${CamelCase<Rest>}` : `${Char}${CamelCase<Capitalize<Rest>>}`
+    : S;
+
+// type S = KebabCase<'testTheCamelCase'>;
+// type S = KebabCase<'test-the-camel-case'>;

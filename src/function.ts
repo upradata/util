@@ -76,11 +76,11 @@ export const pipeline = <D>(data: D) => ({
     }
 });
 
-export const composeLeft = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
+export const composeLeft = <FN extends (arg: any) => any, V extends Parameters<FN>[ 0 ] = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
     return functions.reduce((current: ReturnType<FN>, fn) => fn(current), value);
 };
 
-export const compose = <FN extends (...args: any[]) => any, V extends ReturnType<FN> = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
+export const compose = <FN extends (arg: any) => any, V extends Parameters<FN>[ 0 ] = ReturnType<FN>, R = ReturnType<FN>>(functions: FN[], value: V): R => {
     return composeLeft(functions.reverse(), value);
 };
 

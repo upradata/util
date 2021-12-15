@@ -1,6 +1,7 @@
 import { recreateString } from './recreate-string';
 
-export type StyleTransform<T = any> = (...args: T[]) => T;
+export type StyleTransform<T = any, R = T> = (...args: T[]) => R;
+export type StyleTransformString<T = any> = (s: string) => T;
 export type StyleMode = 'args' | 'full' | 'both' | 'null';
 
 

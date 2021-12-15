@@ -37,7 +37,7 @@ const f: F = 'test';
 
 const ff = ensureFunction(f as F); */
 
-export const arrayN = (n: number) => Array(n).fill(0);
+export const arrayN = <T = any>(n: number, fill: T = undefined): T[] => Array(n).fill(fill);
 
 
 /* export type ReturnSelector<V> = { if: boolean, value: V; };

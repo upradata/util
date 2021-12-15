@@ -33,17 +33,17 @@
 	},
 	"devDependencies": {
 		"@types/common-tags": "^1.8.1",
-		"@types/jest": "^27.0.1",
-		"@types/node": "^16.7.8",
-		"concurrently": "^6.2.1",
-		"jest": "^27.1.0",
+		"@types/jest": "^27.0.3",
+		"@types/node": "^16.11.11",
+		"concurrently": "^6.4.0",
+		"jest": "^27.4.3",
 		"shx": "^0.3.3",
-		"ts-jest": "^27.0.5",
-		"typescript": "^4.4.2"
+		"ts-jest": "^27.1.0",
+		"typescript": "^4.5.2"
 	},
 	"dependencies": {
-		"common-tags": "^1.8.0",
-		"emoji-regex": "^9.2.2"
+		"common-tags": "^1.8.2",
+		"emoji-regex": "^10.0.0"
 	},
 	"keywords": [
 		"typescript",
@@ -60,13 +60,14 @@
 			"@upradata/browser-util": "/home/milottit/Libraries/Upra-Data/browser-util",
 			"@upradata/decorator": "/home/milottit/Libraries/Upra-Data/decorators",
 			"@upradata/express": "/home/milottit/Libraries/Upra-Data/express",
-			"@upradata/stream": "/home/milottit/Libraries/Upra-Data/stream-html",
+			"@upradata/stream": "/home/milottit/Libraries/Upra-Data/stream",
 			"@upradata/object-convert": "/home/milottit/Libraries/Upra-Data/object-convert",
 			"@upradata/proxy": "/home/milottit/Libraries/Upra-Data/proxy",
 			"@upradata/puppeteer": "/home/milottit/Libraries/Upra-Data/puppeteer",
 			"@upradata/rxjs": "/home/milottit/Libraries/Upra-Data/rxjs",
 			"@upradata/tilda-tools": "/home/milottit/Libraries/Tilda/tools",
-			"@upradata/stream-image": "/home/milottit/Libraries/Upra-Data/stream-image"
+			"@upradata/stream-image": "/home/milottit/Libraries/Upra-Data/stream-image",
+			"@upradata/stream-html": "/home/milottit/Libraries/Upra-Data/stream-html"
 		}
 	}
 }

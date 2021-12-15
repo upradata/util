@@ -1,6 +1,6 @@
 /* eslint-disable no-redeclare */
 import { objectToString } from './format-string';
-import { PlainObj, PartialRecursive, Key } from './type';
+import { PlainObj, PartialRecursive, Key, ObjectOf } from './type';
 import { isDefined, isNil, isUndefined } from './is';
 import { Constructor } from './function';
 
@@ -11,6 +11,8 @@ export type ArrayMode = 'merge' | 'replace' | 'concat';
 export type AssignOpts = Partial<Omit<AssignOptions, 'onlyExistingProp' | 'nonRecursivelyAssignableTypes'> & {
     onlyExistingProp: boolean | { level: number; };
     nonRecursivelyAssignableTypes: Iterable<Constructor>;
+    array: ArrayMode | 'primitive';
+    object: 'own-properties' | 'all-prototype-chain';
 }>;
 
 export class AssignOptions {
@@ -20,6 +22,7 @@ export class AssignOptions {
     onlyExistingProp: { level: number; };
     props: (string | symbol)[] = undefined;
     except: (string | symbol)[] = undefined;
+    accept: (key: string | symbol, value: any) => boolean = undefined;
     transform: (key: string | symbol, value: any) => any = undefined;
     nonRecursivelyAssignableTypes: Set<Constructor>;
     isOption: boolean = true;
@@ -39,6 +42,20 @@ export class AssignOptions {
         }
 
         opts.nonRecursivelyAssignableTypes = new Set([ RegExp, Date, ...(opts.nonRecursivelyAssignableTypes || []) ]);
+
+        if (opts.array && !opts.arrayMode) {
+            if (opts.arrayMode)
+                throw new Error(`array option conflicts with arrayMode option`);
+
+            opts.arrayMode = opts.array === 'primitive' ? 'replace' : opts.array;
+        }
+
+        if (opts.object) {
+            if (opts.assignMode)
+                throw new Error(`object option conflicts with assignMode option`);
+
+            opts.assignMode = opts.object === 'own-properties' ? 'of' : 'in';
+        }
 
         Object.assign(this, opts);
     }
@@ -73,8 +90,8 @@ class Assign {
         return typeof e === 'object' && e !== null;
     }
 
-    private assignProp(prop: string, to: any, from: any, outWasPrimitive: boolean) {
-        const { onlyExistingProp, props, except, transform } = this.options;
+    private assignProp(prop: string, to: any, from: ObjectOf<any> | (() => any), outWasPrimitive: boolean) {
+        const { onlyExistingProp, props, except, accept, transform } = this.options;
 
         const getFrom = () => {
             const v = typeof from === 'function' ? from() : from[ prop ];
@@ -83,7 +100,12 @@ class Assign {
 
         if (except) {
             const property = this.findDotProp(prop, except) as string;
-            if (isDefined(property) && property.split('.').pop() === prop)
+            if (property?.split('.').pop() === prop)
+                return;
+        }
+
+        if (accept) {
+            if (!accept(prop, getFrom()))
                 return;
         }
 
