@@ -67,7 +67,9 @@
 			"@upradata/rxjs": "/home/milottit/Libraries/Upra-Data/rxjs",
 			"@upradata/tilda-tools": "/home/milottit/Libraries/Tilda/tools",
 			"@upradata/stream-image": "/home/milottit/Libraries/Upra-Data/stream-image",
-			"@upradata/stream-html": "/home/milottit/Libraries/Upra-Data/stream-html"
+			"@upradata/stream-html": "/home/milottit/Libraries/Upra-Data/stream-html",
+			"@upradata/tilda-services-components": "/home/milottit/Libraries/Tilda/services-components",
+			"@upradata/webpack": "/home/milottit/Libraries/Upra-Data/webpack"
 		}
 	}
 }

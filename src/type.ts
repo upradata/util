@@ -217,3 +217,7 @@ export type CamelCase<S> = S extends `${infer Char}-${infer Rest}`
 
 // type S = KebabCase<'testTheCamelCase'>;
 // type S = KebabCase<'test-the-camel-case'>;
+
+
+declare const NotDefinedSymbol: unique symbol;
+export type NotDefined = typeof NotDefinedSymbol;

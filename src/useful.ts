@@ -1,7 +1,7 @@
 import { AssignOptions, assignRecursive } from './assign';
 import { Constructor } from './function';
 import { isArray, isDefined, isDefinedProp, isPromise } from './is';
-import { Key, InferArrayType, Arr, TT, FF } from './type';
+import { Key, InferArrayType, Arr, TT, FF, TT$, NotDefined } from './type';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 // Now it is not necessary anymore with o?.a syntax
@@ -40,43 +40,90 @@ const ff = ensureFunction(f as F); */
 export const arrayN = <T = any>(n: number, fill: T = undefined): T[] => Array(n).fill(fill);
 
 
-/* export type ReturnSelector<V> = { if: boolean, value: V; };
-export type Selector<D, V> = (data: D) => ReturnSelector<V>; */
 
-export type ReturnIfSelector<T, E, N> = { if?: FF<boolean>; then: T; else?: E; next?: N; functionToCall?: boolean; };
-export type IfSelector<T, E, N, D> = ((data?: D) => ReturnIfSelector<T, E, N>) | ReturnIfSelector<T, E, N>;
+type IfChainedValue<D, V> = V | ((data?: D) => V);
+type IfChainedCondition<D> = IfChainedValue<D, TT$<boolean>>;
+type CallableValue<T> = { callable: () => T; };
+type Selector<D, T = any, E = any, N = any> = { if?: IfChainedCondition<D>; then: T | CallableValue<T>; else?: E | CallableValue<E>; next?: N; };
+type IfChainedSelector<D, T = any, E = any, N = any> = IfChainedValue<D, Selector<D, T, E, N>>;
 
 
-export const ifChained = <D = never, F = never>(data: D = undefined, finalValue: F = undefined, done: boolean = false) => ({
-    next: <T, E = never, N = never>(selector: IfSelector<T, E, N, D>) => {
-        // for TS typing, we are obliged to return in one place only
-        // otherwise, TS will give the return type of next the "any" type
-        let value: F | T | E = undefined;
-        let nextData: N = undefined;
-        let isDone: boolean = undefined;
+type Ex<S extends Selector<any>, K> = K extends keyof S ?
+    K extends 'then' ? S[ K ] extends CallableValue<any> ? ReturnType<S[ K ][ 'callable' ]> : S[ K ] :
+    K extends 'else' ? S[ K ] extends CallableValue<any> ? ReturnType<S[ K ][ 'callable' ]> : S[ K ] :
+    S[ K ] :
+    never;
 
-        if (done) {
-            value = finalValue;
-            nextData = data as any as N;
-            isDone = true;
-        } else {
+type ExtractS<S extends IfChainedSelector<any>, K extends keyof Selector<any>> = S extends (...args: any) => any ?
+    Ex<ReturnType<S>, K> :
+    S extends Selector<any> ? Ex<S, K> : never;
+
+
+export type IfChainedNext<D, V = never> = {
+    next: <S extends IfChainedSelector<D>>(selector: S) => IfChainedNext<
+        [ ExtractS<S, 'next'> ] extends [ never ] ? D : ExtractS<S, 'next'>,
+        V | ExtractS<S, 'then'> | ExtractS<S, 'else'>
+    >;
+    value: V;
+};
+
+export type IfChained = <D>(data?: D) => {
+    next: <S extends IfChainedSelector<D>>(selector: S) => IfChainedNext<D,
+        ExtractS<S, 'then'> | ExtractS<S, 'else'>
+    >;
+};
+
+
+const _ifChained = <D = never>(data: D = undefined) => {
+    const isCallable = <T>(v: T | CallableValue<T>): v is CallableValue<T> => typeof v === 'object' && 'callable' in v;
+
+    const _if = <D, F>(data: D = undefined, finalValue: F = undefined, done: boolean = false) => ({
+        next: <T, E = never, N = never>(selector: IfChainedSelector<D, T, E, N>) => {
+            // for TS typing, we are obliged to return in one place only
+            // otherwise, TS will give the return type of next the "any" type
+            /* let value: F | T | E = undefined;
+            let nextData: N = undefined;
+            let isDone: boolean = undefined; */
+
+            if (done)
+                return { next: _if(data, finalValue, true).next, value: finalValue };
+
 
             const select = ensureFunction(selector)(data);
 
-            const iff = ensureFunction(select.if)();
-            const then = select.functionToCall ? ensureFunction(select.then)() : select.then;
-            const elsee = isDefinedProp(select, 'else') ? select.functionToCall ? ensureFunction(select.else)() : select.else : undefined;
+            const iff = isDefinedProp(select, 'if') ? ensureFunction(select.if)(data) : true;
+            const then = isCallable(select.then) ? select.then.callable() : select.then;
+            const elsee = isCallable(select.else) ? select.else.callable() : select.else;
 
-            value = iff ? then : elsee;
-            nextData = isDefinedProp(select, 'next') ? select.next : data as any as N;
-            isDone = iff || isDefinedProp(select, 'else');
+            const processIfValue = (ifValue: boolean) => {
+                const value = ifValue ? then : elsee;
+                const nextData = isDefinedProp(select, 'next') ? select.next : data as any as N;
+                const isDone = ifValue || isDefinedProp(select, 'else');
+
+                return { next: _if(nextData, value, isDone).next, value };
+            };
+
+            return iff instanceof Promise ? iff.then(processIfValue) : processIfValue(iff);
         }
+    });
 
-        return { next: ifChained(nextData, value, isDone).next, value };
-    }
-});
+    return _if(data);
+};
 
+
+export const ifChained = _ifChained as any as IfChained;
 export const ifThen = ifChained;
+
+
+/* const v2 = ifThen('test').next({ if: false, then: 11 }).next({ if: false, then: '11' }).value;
+
+const v3 = ifThen('test').next({ if: s => s === 'test', then: 11 }).next(s => ({ if: s === 'mm', then: '11' })).value;
+
+const v4 = ifThen('test').next({ if: Promise.resolve(true), then: 11 }).next(s => ({ if: Promise.resolve(s === 'mm'), then: '11' })).value;
+
+const v5 = ifThen('test').next({ if: false, then: { callable: () => 11 } }).next(s => ({ if: s === 'tes', then: '11', next: 23 })).next(s => ({ if: s === 10, then: '11' })).value;
+
+ */
 
 /* const valueIf = ifChained()
     .next(() => ({ if: 'caca' === 'caCa', then: 'caca' }))

@@ -67,10 +67,10 @@ export const repeatChained = <T>(func: (value: T, i?: number) => T, n: number, i
 };
 
 
-export type Next<D, N> = (data: D) => N;
+export type PipelineNext<D, N> = (data: D) => N;
 
 export const pipeline = <D>(data: D) => ({
-    pipe: <N>(next: Next<D, N>) => {
+    pipe: <N>(next: PipelineNext<D, N>) => {
         const ret = next(data);
         return { pipe: pipeline(ret).pipe, value: ret };
     }
