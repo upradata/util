@@ -5,6 +5,7 @@ export * from './execute-temporary-state';
 export * from './format-string';
 export * from './function';
 export * from './guid';
+export * from './ifthen';
 export * from './is';
 export * from './mixin';
 export * from './object';

@@ -1,4 +1,4 @@
-import { ifThen } from './../useful';
+import { ifthen } from '../ifthen';
 import { isDefinedProp, isPlainObject } from '../is';
 import { Key, OmitType, ValueOf, Arr } from '../type';
 
@@ -34,11 +34,11 @@ export const reduce = <T extends Arr<any> | {}, R>(o: T, reducer: ReduceReducer<
 
     return Object.entries(o).reduce((current, [ k, v ]) => {
 
-        const value = ifThen().next({
+        const value = ifthen({
             if: isRecursive,
             then: typeof v === 'object' ? reduce(v, reducer as any, init) : v,
             else: v
-        }).value;
+        });
 
         return reducer(current, k as any, value as any);
 
