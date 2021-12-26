@@ -45,4 +45,4 @@ export const reduce = <T extends Arr<any> | {}, R>(o: T, reducer: ReduceReducer<
     }, init);
 };
 
-// reduce({ a: 1, b: { b1: 1, b2: 2, b3: { b11: 1 } }, c: { c1: 2 }, d: 3 } as const, 0, (current, k, v) => current + v) === 10;
+// reduce({ a: 1, b: { b1: 1, b2: 2, b3: { b11: 1 } }, c: { c1: 2 }, d: 3 } as const, (current, k, v) => current + v, 0) === 10;
