@@ -73,6 +73,9 @@ const hasOwnProperty = (o: object, prop: Key) => {
 };
 
 
+const isObjectOrArray = (v: any): v is any[] | ObjectOf<any> => typeof v === 'object' && v !== null;
+
+
 class Assign {
 
     private options: AssignOptions;
@@ -84,10 +87,6 @@ class Assign {
 
     private lastLevel() {
         return !Number.isNaN(this.options.depth) && this.options.depth === 1;
-    }
-
-    private isObjectOrArray(e: any) {
-        return typeof e === 'object' && e !== null;
     }
 
     private assignProp(prop: string, to: any, from: ObjectOf<any> | (() => any), outWasPrimitive: boolean) {
@@ -151,27 +150,31 @@ class Assign {
         const { out, ins } = this;
         const { assignMode, arrayMode, depth, nonRecursivelyAssignableTypes } = this.options;
 
-        const to = typeof out === 'object' ? out : {};
-        const isPrimitive = fromPrimitive || typeof out !== 'object';
+        const to = isObjectOrArray(out) ? out : {};
+        const outIsPrimitive = fromPrimitive || isObjectOrArray(out);
 
         const isRecAssignable = (v: any) => ![ ...nonRecursivelyAssignableTypes ].some(ctor => v instanceof ctor);
         /*  typeof v === type || */ /* v.constructor === type */
 
         for (const inn of ins) {
-            if (inn === undefined || inn === null)
+            if (inn === undefined || inn === null || !isObjectOrArray(inn))
                 continue;
 
             // eslint-disable-next-line guard-for-in
             for (const prop in inn) {
-                const isPropPrimitive = fromPrimitive || (prop in to) && typeof to[ prop ] !== 'object';
 
                 if ((assignMode === 'of' && hasOwnProperty(inn, prop) || assignMode === 'in')) {
+
+                    const isPropPrimitive = fromPrimitive || isObjectOrArray(to[ prop ]);
+
                     // recursion
-                    if (this.isObjectOrArray(inn[ prop ]) && !this.lastLevel() && isRecAssignable(inn[ prop ])) { // array also
+                    if (isObjectOrArray(inn[ prop ]) && !this.lastLevel() && isRecAssignable(inn[ prop ])) { // array also
                         if (Array.isArray(inn[ prop ]) && arrayMode !== 'merge') {
                             if (arrayMode === 'replace')
                                 this.assignProp(prop, to, inn, isPropPrimitive);
-                            else { // concat
+                            else {
+                                console.assert(arrayMode === 'concat');
+
                                 if (isDefined(to[ prop ]) && !Array.isArray(to[ prop ]))
                                     throw new Error(`Error while assigning: property "${prop}" in ${objectToString(to)} is not an array (concat mode)`);
 
@@ -182,15 +185,20 @@ class Assign {
                             const defaultTo = Array.isArray(inn[ prop ]) ? [] : {};
                             const options = { ...this.options, depth: depth - 1 };
 
-                            this.assignProp(prop,
+                            this.assignProp(
+                                prop,
                                 to,
-                                () => new Assign(to[ prop ] || defaultTo, [ inn[ prop ] ], options).assignRecursive(currentLevel + 1, isPrimitive || typeof to[ prop ] !== 'object'),
+                                // callback to postpone
+                                () => new Assign(
+                                    isObjectOrArray(to[ prop ]) ? to[ prop ] : defaultTo, [ inn[ prop ] ],
+                                    options
+                                ).assignRecursive(currentLevel + 1, outIsPrimitive || isObjectOrArray(to[ prop ])),
                                 isPropPrimitive
                             );
                         }
                     } else
                         // normal case
-                        this.assignProp(prop, to, inn, isPrimitive);
+                        this.assignProp(prop, to, inn, outIsPrimitive);
                 }
             }
         }
