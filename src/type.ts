@@ -46,10 +46,13 @@ export type PartialRecursiveWithArray<T> = {
 export type PartialRecursive<T> = {
     [ K in keyof T ]?:
     T[ K ] extends unknown[] ? T[ K ] :
+    T[ K ] extends (RegExp | Date) ? T[ K ] :
+    T[ K ] extends (...args: any[]) => any ? T[ K ] :
     T[ K ] extends object ? PartialRecursive<T[ K ]> :
     T[ K ];
 };
 
+// type AA = PartialRecursive<{ a: (pathDest: string) => void | Promise<void>; b: 2; r: RegExp; d: Date; }>;
 
 export type RecordRecursive<O extends {}, Type> = {
     [ K in keyof O ]: O[ K ] extends Arr<any> ? Type : O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
