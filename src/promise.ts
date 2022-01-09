@@ -22,3 +22,21 @@ export const delayedPromise = <T>() => {
 
     return { promise, resolve, reject };
 };
+
+
+
+export type CallTimeoutOptions = { ms?: number; waitPromise?: boolean; };
+export const callTimeout = <R, O extends CallTimeoutOptions>(func: () => R, options: O): O[ 'waitPromise' ] extends true ? R : Promise<R> => {
+    const { ms, waitPromise } = options;
+
+    return new Promise<R | Promise<R>>((resolve, _rej) => {
+        setTimeout(() => {
+            const r = func();
+
+            if (r instanceof Promise && waitPromise)
+                return r.then(resolve);
+
+            return resolve(r);
+        }, ms);
+    }) as any;
+};
