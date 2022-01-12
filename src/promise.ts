@@ -2,12 +2,18 @@ import type { TT$ } from './type';
 import { arrayN } from './useful';
 
 
-export const chained$ = <T>(promises: Array<(value: T, i?: number) => TT$<T>>, init: T = undefined): Promise<T> => {
-    return promises.reduce((current, promise, i) => current.then(v => promise(v, i)), Promise.resolve(init));
+export type ChainedFunc<T> = (value: T, i?: number) => TT$<T>;
+
+export const chained$ = <T>(functions: ChainedFunc<T>[], init: T = undefined): Promise<T> => {
+    return functions.reduce((current, func, i) => current.then(v => func(v, i)), Promise.resolve(init));
 };
 
-export const repeatChained$ = <T>(func: (value: T, i?: number) => TT$<T>, n: number, init: T = undefined): Promise<T> => {
+export const repeatChained$ = <T>(func: ChainedFunc<T>, n: number, init: T = undefined): Promise<T> => {
     return chained$(arrayN(n).map(_i => func), init);
+};
+
+export const chainedArr$ = <T, R>(array: T[], func: (arrayValue: T, reducerValue?: R, i?: number) => TT$<R>, init: R = undefined): Promise<R> => {
+    return chained$(array.map(v => (r, i) => func(v, r, i)), init);
 };
 
 
