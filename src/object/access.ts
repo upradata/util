@@ -1,5 +1,5 @@
 import { arrayFromIterable } from '../useful';
-import { RecordOf } from '../type';
+import { RecordOf } from '../types';
 import { Constructor0 } from '../function';
 
 

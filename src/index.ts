@@ -15,5 +15,5 @@ export * from './random';
 export * from './regex';
 export * from './string';
 export * from './template-string';
-export * from './type';
+export * from './types';
 export * from './useful';

@@ -1,5 +1,5 @@
 import { KeysRecursive, PrimitiveRecursive } from './recursive.type';
-import { Arr } from '../type';
+import { Arr } from '../types';
 
 
 export const forEach = <T extends Arr<any> | {}>(o: T, callback: (key: KeysRecursive<T>, v: PrimitiveRecursive<T>) => void | 'stop', isRecursive: boolean = false): void => {

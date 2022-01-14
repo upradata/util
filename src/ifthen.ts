@@ -1,6 +1,6 @@
 import { isDefinedProp } from './is';
 import { ensureFunction } from './useful';
-import type { TT$ } from './type';
+import type { TT$ } from './types';
 
 type IfChainedValue<D, V> = V | ((data?: D) => V);
 type IfChainedCondition<D> = IfChainedValue<D, TT$<boolean>>;

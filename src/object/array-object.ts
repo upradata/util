@@ -1,4 +1,4 @@
-import { RecordOf, InferRecordType, Key } from '../type';
+import { RecordOf, InferRecordType, Key } from '../types';
 import { arrayFromIterable } from '../useful';
 
 

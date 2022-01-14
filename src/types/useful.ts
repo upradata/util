@@ -209,14 +209,14 @@ export type AlphabetUpper = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I' 
 export type Numbers = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 
 
-// https://ghaiklor.github.io/type-challenges-solutions/en/medium-kebabcase.html
+// https://ghaiklor.github.io/types-challenges-solutions/en/medium-kebabcase.html
 // S extends `${infer C}${infer T}` allows to get the [head, tail] with head=first letter and tail=the rest :))
 export type KebabCase<S> = S extends `${infer Char}${infer Rest}`
     // 2 cases: 1) rest=ab... 2) we have rest=Ab....
     ? Rest extends Uncapitalize<Rest> ? `${Uncapitalize<Char>}${KebabCase<Rest>}` : `${Uncapitalize<Char>}-${KebabCase<Rest>}`
     : S;
 
-// https://ghaiklor.github.io/type-challenges-solutions/en/medium-camelcase.html
+// https://ghaiklor.github.io/types-challenges-solutions/en/medium-camelcase.html
 export type CamelCase<S> = S extends `${infer Char}-${infer Rest}`
     ? Rest extends Capitalize<Rest> ? `${Char}-${CamelCase<Rest>}` : `${Char}${CamelCase<Capitalize<Rest>>}`
     : S;

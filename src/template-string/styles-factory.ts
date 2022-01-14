@@ -1,4 +1,4 @@
-import { Prop, ToString } from './../type';
+import { Prop, ToString } from './../types';
 import { StyleTransform, Style, StyleOptions } from './style';
 import { CommonTagStyle } from './helpers/common-tags.type';
 import * as commonTags from 'common-tags';

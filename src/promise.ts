@@ -1,4 +1,4 @@
-import type { TT$ } from './type';
+import type { TT$ } from './types';
 import { arrayN } from './useful';
 
 

@@ -1,6 +1,6 @@
 /* import type { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators'; */
-import { PlainObj } from './type';
+import { PlainObj } from './types';
 
 export interface State {
     obj: PlainObj;

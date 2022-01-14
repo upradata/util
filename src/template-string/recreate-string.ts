@@ -1,4 +1,4 @@
-import { ToString } from '../type';
+import { ToString } from '../types';
 
 export function recreateString(strings: TemplateStringsArray, ...keys: ToString[]) {
     const parameters = [ ...keys, '' ];

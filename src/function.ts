@@ -1,4 +1,4 @@
-import type { Arr } from './type';
+import type { Arr } from './types';
 
 
 export type Function0<R = any> = () => R;

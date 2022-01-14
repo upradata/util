@@ -1,7 +1,7 @@
 import { AssignOptions, assignRecursive } from './assign';
 import type { Constructor, FunctionN } from './function';
 import { isArray, isDefined, isPromise } from './is';
-import type { Key, InferArrayType, Arr, TT } from './type';
+import type { Key, InferArrayType, Arr, TT } from './types';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 // Now it is not necessary anymore with o?.a syntax
@@ -80,7 +80,7 @@ firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour'; */
 export const arrayFromIterable = <T>(it: Iterable<T>): T[] => Array.isArray(it) ? it : [ ...it ];
 
 
-export const deepCopy = <O extends object>(o: O, options?: AssignOptions) => assignRecursive({}, o, options);
+export const deepCopy = <O extends {}>(o: O, options?: AssignOptions): O => assignRecursive({}, o, options) as O;
 
 
 

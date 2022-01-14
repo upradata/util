@@ -1,6 +1,6 @@
 /* eslint-disable no-redeclare */
 import { objectToString } from './format-string';
-import { PlainObj, PartialRecursive, Key, ObjectOf } from './type';
+import { PlainObj, PartialRecursive, Key, ObjectOf, Merge, InferArrayType } from './types';
 import { isDefined, isNil, isUndefined } from './is';
 import { Constructor } from './function';
 
@@ -209,71 +209,47 @@ class Assign {
 }
 
 
-
-
-export function assignRecursiveArray<T1 extends PlainObj, T2 extends PlainObj>(out: T1, inn: [ T2 ], options?: AssignOpts): T1 & T2;
-export function assignRecursiveArray<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj>(out: T1, inn: [ T2, T3 ], options?: AssignOpts): T1 & T2 & T3;
-export function assignRecursiveArray<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj>(out: T1, inn: [ T2, T3, T4 ], options?: AssignOpts): T1 & T2 & T3 & T4;
-export function assignRecursiveArray<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj, T5 extends PlainObj>(out: T1, inn: [ T2, T3, T4, T5 ], options?: AssignOpts): T1 & T2 & T3 & T4 & T5;
-export function assignRecursiveArray(out: PlainObj, ins: PlainObj[], options?: AssignOpts) {
-
-    return new Assign(out, ins, options).assignRecursive();
-}
-
-
-
-export function assignRecursive<T1 extends PlainObj, T2 extends PlainObj>(out: T1, inn: T2): T1 & T2;
-export function assignRecursive<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj>(out: T1, inn1: T2, inn2: T3): T1 & T2 & T3;
-export function assignRecursive<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4): T1 & T2 & T3 & T4;
-export function assignRecursive<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj, T5 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4, inn4: T5): T1 & T2 & T3 & T4 & T5;
-export function assignRecursive(out: PlainObj, ...ins: (PlainObj | AssignOpts)[]) {
+const splitArgs = <T extends {}>(args: [ ...T[], T | AssignOpts ]) => {
+    const [ out, ...ins ] = args;
 
     if (isAssignOptions(ins[ ins.length - 1 ])) {
         const options = ins[ ins.length - 1 ];
-        return assignRecursiveArray(out, ins.slice(0, -1) as any, options);
+        return { out, ins: ins.slice(0, -1), options };
     }
 
-    return assignRecursiveArray(out, ins as any);
+    return { out, ins, options: undefined };
+};
+
+
+export function assignRecursiveArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOpts = {}): Merge<O | T> {
+    return new Assign(out, ins, options).assignRecursive() as any;
 }
 
 
-type AssignOptsRed = Omit<AssignOpts, 'assignMode'>;
+/* const test = assignRecursive({ a: 1 }, { a: 1, b: 2 }, { a: 1, c: 3 }, { a: 1, d: 4 });
+const o = { b: 2 };
+const test2 = assignRecursive({ a: 1 }, o); */
 
-export function assignRecursiveInArray<T1 extends PlainObj, T2 extends PlainObj>(out: T1, inn: [ T2 ], options?: AssignOptsRed): T1 & T2;
-export function assignRecursiveInArray<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj>(out: T1, inn: [ T2, T3 ], options?: AssignOptsRed): T1 & T2 & T3;
-export function assignRecursiveInArray<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj>(out: T1, inn: [ T2, T3, T4 ], options?: AssignOptsRed): T1 & T2 & T3 & T4;
-export function assignRecursiveInArray<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj, T5 extends PlainObj>(out: T1, inn: [ T2, T3, T4, T5 ], options?: AssignOptsRed): T1 & T2 & T3 & T4 & T5;
-export function assignRecursiveInArray(out: PlainObj, ins: PlainObj[], options: AssignOptsRed) {
-
-    return new Assign(out, ins, { ...options, assignMode: 'in' }).assignRecursive();
+export function assignRecursive<T extends any[]>(...args: T): Merge<InferArrayType<T>>;
+export function assignRecursive<T extends any[]>(...args: [ ...T, AssignOpts ]): Merge<T> {
+    const { out, ins, options } = splitArgs(args);
+    return assignRecursiveArray(out, ins, options) as any;
 }
 
-export function assignRecursiveIn<T1 extends PlainObj, T2 extends PlainObj>(out: T1, inn: T2): T1 & T2;
-export function assignRecursiveIn<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj>(out: T1, inn1: T2, inn2: T3): T1 & T2 & T3;
-export function assignRecursiveIn<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4): T1 & T2 & T3 & T4;
-export function assignRecursiveIn<T1 extends PlainObj, T2 extends PlainObj,
-    T3 extends PlainObj, T4 extends PlainObj, T5 extends PlainObj>(out: T1, inn1: T2, inn2: T3, inn3: T4, inn4: T5): T1 & T2 & T3 & T4 & T5;
-export function assignRecursiveIn(out: PlainObj, ...ins: (PlainObj | AssignOptsRed)[]) {
+type AssignOptsWithoutAssignMode = Omit<AssignOpts, 'assignMode'>;
 
-    if (isAssignOptions(ins[ ins.length - 1 ]))
-        return assignRecursiveInArray(out, ins.slice(-1) as any, ins[ ins.length - 1 ]);
-
-    return assignRecursiveInArray(out, ins as any);
+export function assignRecursiveInArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOptsWithoutAssignMode = {}): Merge<O | T> {
+    return assignRecursiveArray(out, ins, { ...options, assignMode: 'in' });
 }
 
 
-export function assignDefaultOption<T extends PlainObj>(defaultOption: T, option: PartialRecursive<T>, assignMode: AssignOpts = { assignMode: 'in', arrayMode: 'merge' }): T {
+export function assignRecursiveIn<T extends any[]>(...args: T): Merge<InferArrayType<T>>;
+export function assignRecursiveIn<T extends any[]>(...args: [ ...T, AssignOptsWithoutAssignMode ]): Merge<InferArrayType<T>> {
+    const { out, ins, options } = splitArgs(args);
+    return assignRecursiveInArray(out, ins, options) as any;
+}
 
-    return assignRecursiveArray({}, [ defaultOption, option ], assignMode);
+
+export function assignDefaultOption<T extends {}>(defaultOption: T, option: PartialRecursive<T>, assignMode: AssignOpts = { assignMode: 'in', arrayMode: 'merge' }): T {
+    return assignRecursiveArray({}, [ defaultOption, option ], assignMode) as any;
 }

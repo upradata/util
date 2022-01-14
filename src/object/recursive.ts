@@ -1,5 +1,5 @@
 import { isDefined, isPlainObject } from '../is';
-import { Key } from '../type';
+import { Key } from '../types';
 import { entries } from './access';
 import { ConcatenatedKeysRecursive } from './recursive.type';
 

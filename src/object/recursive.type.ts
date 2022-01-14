@@ -1,5 +1,5 @@
 
-import { NonObject, ValueOf, Levels } from '../type';
+import { NonObject, ValueOf, Levels } from '../types';
 
 
 /* export type PrimitiveRecursive<T> = {

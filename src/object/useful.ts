@@ -1,6 +1,6 @@
 import { ifthen } from '../ifthen';
 import { isDefinedProp, isPlainObject } from '../is';
-import { Key, OmitType, ValueOf, Arr } from '../type';
+import { Key, OmitType, ValueOf, Arr } from '../types';
 
 import { entries, fromEntries } from './access';
 import { KeysRecursive, PrimitiveRecursive } from './recursive.type';
