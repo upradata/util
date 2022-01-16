@@ -80,7 +80,7 @@ firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour'; */
 export const arrayFromIterable = <T>(it: Iterable<T>): T[] => Array.isArray(it) ? it : [ ...it ];
 
 
-export const deepCopy = <O extends {}>(o: O, options?: AssignOptions): O => assignRecursive({}, o, options) as O;
+export const deepCopy = <O extends {}>(o: O, options?: AssignOptions): O => assignRecursive({}, o, options) as any as O;
 
 
 

@@ -19,51 +19,9 @@ export type ValueOf<O extends {}> = O[ keyof O ];
 
 export type PlainObj<T = any> = RecordOf<T>;
 
-/* export type PartialRecursive<T> = PartialRec<T>;
-
-type isArray<T> = T extends (infer U)[] ? true : false;
-
-type PartialRec<T> = {
-    [ K in keyof T ]?: isArray<T[ K ]> extends true ? T[ K ] : PartialRecursive<T[ K ]>;
-}; */
-
-// https://stackoverflow.com/questions/41980195/recursive-partialt-in-typescript-2-1
-// more compact than mine
-/* export type PartialRecursive<T> = {
-    [ K in keyof T ]?:
-    T[ K ] extends (infer U)[] ? T[ K ] :
-    T[ K ] extends object ? PartialRecursiveWithArray<T[ K ]> :
-    T[ K ];
-};
-
-export type PartialRecursiveWithArray<T> = {
-    [ K in keyof T ]?:
-    T[ K ] extends (infer U)[] ? PartialRecursiveWithArray<U>[] :
-    T[ K ] extends object ? PartialRecursiveWithArray<T[ K ]> :
-    T[ K ];
-};*/
-
-export type PartialRecursive<T, Options extends 'array' | 'strict' = 'strict'> = {
-    [ K in keyof T ]?:
-    T[ K ] extends (RegExp | Date) ? T[ K ] :
-    T[ K ] extends (...args: any[]) => any ? T[ K ] :
-
-    Options extends 'array' ? T[ K ] extends Arr<infer U> ? PartialRecursive<U, Options>[] : T[ K ] :
-    T[ K ] extends unknown[] ? Options extends 'array' ? PartialRecursive<InferArrayType<T[ K ]>, Options>[] : T[ K ] :
-
-    T[ K ] extends object ? PartialRecursive<T[ K ], Options> :
-    T[ K ];
-};
-
-// type AA = PartialRecursive<{ a: (pathDest: string) => void | Promise<void>; b: 2; r: RegExp; d: Date; arr: { a: number; }[]; }, 'array'>;
-
 export type RecordRecursive<O extends {}, Type> = {
     [ K in keyof O ]: O[ K ] extends Arr<any> ? Type : O[ K ] extends object ? RecordRecursive<O[ K ], Type> : Type
 };
-
-
-
-
 
 // because typescript complains if it can be an infinite recursion => we max out to 20 levels of recurrsion
 // (array.prototype.flat is doing so also => see ts definition)
@@ -183,6 +141,7 @@ export type Or<T, U> = T extends true ? true : U extends true ? true : false;
 
 export type And<T, U> = T extends true ? U extends true ? true : false : false;
 
+export type IsObject<T> = T extends {} ? T extends [] ? false : true : false;
 
 
 

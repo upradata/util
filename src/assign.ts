@@ -1,12 +1,12 @@
 /* eslint-disable no-redeclare */
 import { objectToString } from './format-string';
-import { PlainObj, PartialRecursive, Key, ObjectOf, Merge, InferArrayType } from './types';
+import { PlainObj, PartialRecursive, Key, ObjectOf, MergeRecursive, InferArrayType } from './types';
 import { isDefined, isNil, isUndefined } from './is';
 import { Constructor } from './function';
 
 
 export type AssignMode = 'of' | 'in';
-export type ArrayMode = 'merge' | 'replace' | 'concat';
+export type ArrayMode = 'MergeRecursive' | 'replace' | 'concat';
 
 export type AssignOpts = Partial<Omit<AssignOptions, 'onlyExistingProp' | 'nonRecursivelyAssignableTypes'> & {
     onlyExistingProp: boolean | { level: number; };
@@ -17,7 +17,7 @@ export type AssignOpts = Partial<Omit<AssignOptions, 'onlyExistingProp' | 'nonRe
 
 export class AssignOptions {
     assignMode: AssignMode = 'of';
-    arrayMode: ArrayMode = 'merge';
+    arrayMode: ArrayMode = 'MergeRecursive';
     depth: number = NaN;
     onlyExistingProp: { level: number; };
     props: (string | symbol)[] = undefined;
@@ -169,7 +169,7 @@ class Assign {
 
                     // recursion
                     if (isObjectOrArray(inn[ prop ]) && !this.lastLevel() && isRecAssignable(inn[ prop ])) { // array also
-                        if (Array.isArray(inn[ prop ]) && arrayMode !== 'merge') {
+                        if (Array.isArray(inn[ prop ]) && arrayMode !== 'MergeRecursive') {
                             if (arrayMode === 'replace')
                                 this.assignProp(prop, to, inn, isPropPrimitive);
                             else {
@@ -221,35 +221,31 @@ const splitArgs = <T extends {}>(args: [ ...T[], T | AssignOpts ]) => {
 };
 
 
-export function assignRecursiveArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOpts = {}): Merge<O | T> {
+export function assignRecursiveArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOpts = {}): MergeRecursive<O | T> {
     return new Assign(out, ins, options).assignRecursive() as any;
 }
 
 
-/* const test = assignRecursive({ a: 1 }, { a: 1, b: 2 }, { a: 1, c: 3 }, { a: 1, d: 4 });
-const o = { b: 2 };
-const test2 = assignRecursive({ a: 1 }, o); */
-
-export function assignRecursive<T extends any[]>(...args: T): Merge<InferArrayType<T>>;
-export function assignRecursive<T extends any[]>(...args: [ ...T, AssignOpts ]): Merge<T> {
+export function assignRecursive<T extends any[]>(...args: T): MergeRecursive<InferArrayType<T>>;
+export function assignRecursive<T extends any[]>(...args: [ ...T, AssignOpts ]): MergeRecursive<T> {
     const { out, ins, options } = splitArgs(args);
     return assignRecursiveArray(out, ins, options) as any;
 }
 
 type AssignOptsWithoutAssignMode = Omit<AssignOpts, 'assignMode'>;
 
-export function assignRecursiveInArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOptsWithoutAssignMode = {}): Merge<O | T> {
-    return assignRecursiveArray(out, ins, { ...options, assignMode: 'in' });
+export function assignRecursiveInArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOptsWithoutAssignMode = {}): MergeRecursive<O | T> {
+    return assignRecursiveArray(out, ins, { ...options, assignMode: 'in' }) as any;
 }
 
 
-export function assignRecursiveIn<T extends any[]>(...args: T): Merge<InferArrayType<T>>;
-export function assignRecursiveIn<T extends any[]>(...args: [ ...T, AssignOptsWithoutAssignMode ]): Merge<InferArrayType<T>> {
+export function assignRecursiveIn<T extends any[]>(...args: T): MergeRecursive<InferArrayType<T>>;
+export function assignRecursiveIn<T extends any[]>(...args: [ ...T, AssignOptsWithoutAssignMode ]): MergeRecursive<InferArrayType<T>> {
     const { out, ins, options } = splitArgs(args);
     return assignRecursiveInArray(out, ins, options) as any;
 }
 
 
-export function assignDefaultOption<T extends {}>(defaultOption: T, option: PartialRecursive<T>, assignMode: AssignOpts = { assignMode: 'in', arrayMode: 'merge' }): T {
+export function assignDefaultOption<T extends {}>(defaultOption: T, option: PartialRecursive<T>, assignMode: AssignOpts = { assignMode: 'in', arrayMode: 'MergeRecursive' }): T {
     return assignRecursiveArray({}, [ defaultOption, option ], assignMode) as any;
 }
