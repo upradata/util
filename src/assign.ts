@@ -25,7 +25,7 @@ export class AssignOptions {
     accept: (key: string | symbol, value: any) => boolean = undefined;
     transform: (key: string | symbol, value: any) => any = undefined;
     nonRecursivelyAssignableTypes: Set<Constructor>;
-    isOption: boolean = true;
+
 
     constructor(options: AssignOpts = {}) {
         const opts = { ...options };
@@ -63,7 +63,7 @@ export class AssignOptions {
 
 
 const isAssignOptions = (v: any): v is AssignOptions => {
-    return isDefined(v) && (v instanceof AssignOptions || v.isOption === true);
+    return isDefined(v) && (v instanceof AssignOptions);
 };
 
 
@@ -209,7 +209,8 @@ class Assign {
 }
 
 
-const splitArgs = <T extends {}>(args: [ ...T[], T | AssignOpts ]) => {
+
+const splitArgs = <T extends any[]>(args: T): { out: ObjectOf<any>, ins: ObjectOf<any>[], options: AssignOptions; } => {
     const [ out, ...ins ] = args;
 
     if (isAssignOptions(ins[ ins.length - 1 ])) {
@@ -221,31 +222,41 @@ const splitArgs = <T extends {}>(args: [ ...T[], T | AssignOpts ]) => {
 };
 
 
-export function assignRecursiveArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOpts = {}): MergeRecursive<O | T> {
+type UnionOfNonAssignOptions<T extends any[]> = T extends [ infer Head, ...infer Tail ] ?
+    Head extends AssignOptions ? UnionOfNonAssignOptions<Tail> : Head | UnionOfNonAssignOptions<Tail> :
+    never;
+
+// type Test = UnionOfNonAssignOptions<[ { a: 1; }, { b: 2; }, AssignOptions, { c: 4; }, AssignOptions, 3 ]>;
+// type Test = 3 | { a: 1; } | { b: 2; } | { c: 4; };
+
+type ReturnType<T extends any[]> = MergeRecursive<UnionOfNonAssignOptions<T>>;
+
+export function assignRecursiveArray<T extends any[]>(args: T, options: AssignOpts = {}): ReturnType<T> {
+    const { out, ins } = splitArgs(args);
     return new Assign(out, ins, options).assignRecursive() as any;
 }
 
 
-export function assignRecursive<T extends any[]>(...args: T): MergeRecursive<InferArrayType<T>>;
-export function assignRecursive<T extends any[]>(...args: [ ...T, AssignOpts ]): MergeRecursive<T> {
+export function assignRecursive<T extends any[]>(...args: T): ReturnType<T> {
     const { out, ins, options } = splitArgs(args);
-    return assignRecursiveArray(out, ins, options) as any;
+    return assignRecursiveArray([ out, ...ins ], options) as any;
 }
+
 
 type AssignOptsWithoutAssignMode = Omit<AssignOpts, 'assignMode'>;
 
-export function assignRecursiveInArray<O extends {}, T extends {}>(out: O, ins: T[], options: AssignOptsWithoutAssignMode = {}): MergeRecursive<O | T> {
-    return assignRecursiveArray(out, ins, { ...options, assignMode: 'in' }) as any;
+export function assignRecursiveInArray<T extends any[]>(args: T, options: AssignOptsWithoutAssignMode = {}): ReturnType<T> {
+    const { out, ins } = splitArgs(args);
+    return assignRecursiveArray([ out, ...ins ], { ...options, assignMode: 'in' }) as any;
 }
 
 
-export function assignRecursiveIn<T extends any[]>(...args: T): MergeRecursive<InferArrayType<T>>;
-export function assignRecursiveIn<T extends any[]>(...args: [ ...T, AssignOptsWithoutAssignMode ]): MergeRecursive<InferArrayType<T>> {
+export function assignRecursiveIn<T extends any[]>(...args: T): ReturnType<InferArrayType<T>> {
     const { out, ins, options } = splitArgs(args);
-    return assignRecursiveInArray(out, ins, options) as any;
+    return assignRecursiveInArray([ out, ...ins ], options) as any;
 }
 
 
 export function assignDefaultOption<T extends {}>(defaultOption: T, option: PartialRecursive<T>, assignMode: AssignOpts = { assignMode: 'in', arrayMode: 'MergeRecursive' }): T {
-    return assignRecursiveArray({}, [ defaultOption, option ], assignMode) as any;
+    return assignRecursiveArray([ {}, defaultOption, option ], assignMode) as any;
 }
