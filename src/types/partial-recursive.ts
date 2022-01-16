@@ -1,13 +1,3 @@
-
-type IsRecrusivable<T> = never |
-    T extends (RegExp | Date) ? false :
-    T extends (...args: unknown[]) => unknown ? false :
-    T extends unknown[] ? true :
-    T extends object ? true :
-    false;
-
-
-
 /* export type PartialRecursive<T> = PartialRec<T>;
 
 type isArray<T> = T extends (infer U)[] ? true : false;
@@ -32,21 +22,20 @@ export type PartialRecursiveWithArray<T> = {
     T[ K ];
 };*/
 
-
-// type RecrusivableType<T, Options extends PartialRecursiveOptions> = T extends (infer U)[] ?
-//     Options extends 'array-as-object' ? PartialRecursive<T, Options> : PartialRecursive<U, Options>[] :
-//     PartialRecursive<T, Options>;
-
-//     export type PartialRecursiveOptions = 'array-element' | 'array-as-object';
-
-// export type PartialRecursive<T, Options extends PartialRecursiveOptions = 'array-as-object'> = {
-//     [ K in keyof T ]?: IsRecrusivable<T[ K ]> extends true ? RecrusivableType<T[ K ], Options> : T[ K ]
-// };
+type IsRecrusivable<T, Options extends PartialRecursiveOptions> = never |
+    T extends (RegExp | Date) ? false :
+    T extends (...args: unknown[]) => unknown ? false :
+    T extends unknown[] ? Options extends 'no-array' ? false : true :
+    T extends object ? true :
+    false;
 
 
-export type PartialRecursive<T> = {
-    [ K in keyof T ]?: IsRecrusivable<T[ K ]> extends true ? PartialRecursive<T[ K ]> : T[ K ]
+export type PartialRecursiveOptions = 'no-array' | 'none';
+
+export type PartialRecursive<T, Options extends PartialRecursiveOptions = 'none'> = {
+    [ K in keyof T ]?: IsRecrusivable<T[ K ], Options> extends true ? PartialRecursive<T[ K ], Options> : T[ K ]
 };
+
 
 
 // type Test = PartialRecursive<{
@@ -64,15 +53,15 @@ export type PartialRecursive<T> = {
 //             o3: number;
 //         };
 //         o4: 2;
-//     }>;
+//     }, "none">;
 //     a?: (pathDest: string) => void | Promise<void>;
 //     b?: 2;
 //     r?: RegExp;
 //     d?: Date;
 //     arr?: PartialRecursive<{
 //         a: number;
-//     }>[];
+//     }, "none">[];
 //     arr2?: [ PartialRecursive<{
 //         el: 1;
-//     }>?, PartialRecursive<...>?];
+//     }, "none">?, PartialRecursive<...>?];
 // }

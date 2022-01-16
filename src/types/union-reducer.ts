@@ -1,3 +1,4 @@
+// inspired by https://stackoverflow.com/questions/52931116/decompose-a-typescript-union-type-into-specific-types
 
 type UnionToFuncParam<U> = U extends any ? (k: U) => void : never;
 type UnionFuncParamToIntersection<U> = UnionToFuncParam<U> extends ((k: infer I) => void) ? I : never;

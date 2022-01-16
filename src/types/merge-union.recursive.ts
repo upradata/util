@@ -12,6 +12,16 @@ type Keys<T> = T extends unknown ? keyof T : never;
 type NonCommonKeys<T> = Exclude<Keys<T>, CommonKeys<T>>;
 
 
+// it it well know that conditional type distribution is made on the first parameter of the condition only if the parameter is naked (only the parameter T)
+// you can see it there https://www.typescriptlang.org/docs/handbook/2/conditional-types.html#distributive-conditional-types
+// For instance type ToArray<T> = T extends any ? T[] : never;  => ToArray<string | number> == string[] | number[] and not (string | number)[]
+// To avoid it, T must not be naked, i.e. T must be the parameter of something => [T] extends any or AnyGeneric<T> extends any => T is NOT naked
+// see https://github.com/microsoft/TypeScript/issues/29368
+// So ToArray<T> = [T] extends [any] ? T[] : never; =>  ToArray<string | number> == (string | number)[] this time string | number is seen as one Type (one element)
+
+// But be careful, in each branch where T appears, the [T] extends trick has to be repeated.
+// Here, T appears in the [ K in CommmonKeys<T> ] first, so we have to put the trick before leading to this ugly syntax CommonKeys<T> extends infer K1 ... to avoid 
+// distribution !! :)))
 type Common<T> = CommonKeys<T> extends infer K1 ? {
     [ K in K1 & CommonKeys<T> ]: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ]> : T[ K ]
 } : never;
