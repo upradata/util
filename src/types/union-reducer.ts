@@ -4,7 +4,11 @@ type UnionToFuncParam<U> = U extends any ? (k: U) => void : never;
 type UnionFuncParamToIntersection<U> = UnionToFuncParam<U> extends ((k: infer I) => void) ? I : never;
 type ExtractFuncParm<F> = F extends { (a: infer A): void; } ? A : never;
 
-type SpliceOne<Union> = Exclude<Union, ExtractOne<Union>>;
+// the built-in type Exclude<T, U> = T extends U ? never : T is not adapted for us because
+// if A = { a:1 } | { a:1; b:2 } => Exclude<A, { a:1 }> == never
+// we need ExcludeExact<A, { a:1}> == { a:1; b:2 }
+type ExcludeExact<T, U> = T extends U ? U extends T ? never : T : T;
+type SpliceOne<Union> = ExcludeExact<Union, ExtractOne<Union>>;
 type ExtractOne<Union> = ExtractFuncParm<UnionFuncParamToIntersection<UnionToFuncParam<Union>>>;
 
 // export type ToTuple<Union> = ToTupleImpl<Union, []>;

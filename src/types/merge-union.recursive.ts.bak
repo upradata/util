@@ -1,4 +1,3 @@
-import { Levels } from './useful';
 
 type IsRecrusivable<T> = never |
     T extends (RegExp | Date) ? false :
@@ -23,16 +22,16 @@ type NonCommonKeys<T> = Exclude<Keys<T>, CommonKeys<T>>;
 // But be careful, in each branch where T appears, the [T] extends trick has to be repeated.
 // Here, T appears in the [ K in CommmonKeys<T> ] first, so we have to put the trick before leading to this ugly syntax CommonKeys<T> extends infer K1 ... to avoid 
 // distribution !! :)))
-type Common<T, Depth extends number> = CommonKeys<T> extends infer K1 ? {
-    [ K in K1 & CommonKeys<T> ]: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ], Depth> : T[ K ]
+type Common<T> = CommonKeys<T> extends infer K1 ? {
+    [ K in K1 & CommonKeys<T> ]: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ]> : T[ K ]
 } : never;
 
 type NonCommonValue<T, K extends PropertyKey> = T extends Partial<Record<K, infer V>> ? keyof T extends never ? never : V : never;
 
 
-type NonCommon<T, Depth extends number> = NonCommonKeys<T> extends infer K1 ? {
+type NonCommonValues<T> = NonCommonKeys<T> extends infer K1 ? {
     // NonCommon properties must be optional as their are not in every type of the union
-    [ K in K1 & NonCommonKeys<T> ]?: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ], Depth> : NonCommonValue<T, K>
+    [ K in K1 & NonCommonKeys<T> ]?: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ]> : NonCommonValue<T, K>
 } : never;
 
 
@@ -48,21 +47,17 @@ type UnionToFuncParam<U> = U extends any ? (k: U) => void : never;
 type UnionFuncParamToIntersection<U> = UnionToFuncParam<U> extends ((k: infer I) => void) ? I : never;
 type ExtractFuncParm<F> = F extends { (a: infer A): void; } ? A : never;
 
-// the built-in type Exclude<T, U> = T extends U ? never : T is not adapted for us because
-// if A = { a:1 } | { a:1; b:2 } => Exclude<A, { a:1 }> == never
-// we need ExcludeExact<A, { a:1}> == { a:1; b:2 }
-type ExcludeExact<T, U> = T extends U ? U extends T ? never : T : T;
-type SpliceOne<Union> = ExcludeExact<Union, ExtractOne<Union>>;
+type SpliceOne<Union> = Exclude<Union, ExtractOne<Union>>;
 type ExtractOne<Union> = ExtractFuncParm<UnionFuncParamToIntersection<UnionToFuncParam<Union>>>;
 
 
-type MergeReduce<Union, Depth extends number = 20> = Depth extends 0 ? Union : MergeReduceImpl<Union, {}, Levels[ Depth ]>;
-type MergeReducer<T, Container, Depth extends number> = Merge<T | Container, Depth>;
-type Merge<T, Depth extends number> = Values<Common<T, Depth> & NonCommon<T, Depth>>;
+type MergeReduce<Union> = MergeReduceImpl<Union, {}>;
+type MergeReducer<T, Container> = Merge<T | Container>;
+type Merge<T> = Values<Common<T> & NonCommonValues<T>>;
 
-type MergeReduceImpl<Union, Container, Depth extends number> =
-    SpliceOne<Union> extends never ? MergeReducer<ExtractOne<Union>, Container, Depth>
-    : MergeReduceImpl<SpliceOne<Union>, MergeReducer<ExtractOne<Union>, Container, Depth>, Depth>;
+type MergeReduceImpl<Union, Container> =
+    SpliceOne<Union> extends never ? MergeReducer<ExtractOne<Union>, Container>
+    : MergeReduceImpl<SpliceOne<Union>, MergeReducer<ExtractOne<Union>, Container>>;
 
 
 // !! See union-reducer for an an explaination and some examples of how the Reducer is working !!
@@ -94,11 +89,4 @@ export type MergeRecursive<TUnion> = MergeReduce<TUnion>;
 //     d?: "d";
 //     b?: 2;
 //     a?: 1;
-// }
-
-
-// type Test = MergeReduce<{ a: 1; } | { a: 2; b: 3; }>;
-// type Test = {
-//     a: 1 | 2;
-//     b?: 3;
 // }

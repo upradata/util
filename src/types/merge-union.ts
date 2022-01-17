@@ -42,22 +42,22 @@ type NonCommonKeys<T> = Exclude<Keys<T>, CommonKeys<T>>;
 //     c?: number;
 // }
 
-type CommonValues<T> = Pick<T, CommonKeys<T>>;
+type Common<T> = Pick<T, CommonKeys<T>>;
 
 // failed for the same reason as above. We need parameters distribution
-// type NonCommonValues<T> = Pick<T, NonCommonKeys<T>>;
+// type NonCommons<T> = Pick<T, NonCommonKeys<T>>;
 // Partial is necessary yo make work optional properties (works with required and optional of course)
 // when T = {} | { a: 1; } for instance, we have to handle the case where the object is totally empty
 // otherwise, we will have { a?: unknown } instead of { a?: 1 }
 // ==> test is done with "keyof T extends never" ("{} extends T" works only for non optional properties, {} extends { a?: any } is true)
-type NonCommonValue<T, K extends PropertyKey> = T extends Partial<Record<K, infer V>> ? keyof T extends never ? never : V : never;
+type NonCommon<T, K extends PropertyKey> = T extends Partial<Record<K, infer V>> ? keyof T extends never ? never : V : never;
 
-type NonCommonValues<T> = {
+type NonCommons<T> = {
     // NonCommon properties must be optional as their are not in every type of the union
-    [ K in NonCommonKeys<T> ]?: NonCommonValue<T, K>;
+    [ K in NonCommonKeys<T> ]?: NonCommon<T, K>;
 };
 
-// type Test = NonCommonValues<{} | { a: 1; } | {} | { b?: 2; }>;
+// type Test = NonCommons<{} | { a: 1; } | {} | { b?: 2; }>;
 // type Test = {
 //     a?: 1;
 //     b?: 2;
@@ -69,8 +69,8 @@ type Values<T extends {}> = {
 
 // see next comment for reason why to use Values being facultative
 export type Merge<TUnion> = Values<
-    CommonValues<TUnion> &
-    NonCommonValues<TUnion>
+    Common<TUnion> &
+    NonCommons<TUnion>
 >;
 
 // type A = { a?: string; b: string; c: number; e: number; } | { a?: number; b: string[]; c?: number; d: string; };
@@ -97,7 +97,7 @@ export type Merge<TUnion> = Values<
 // without Values it is working. But the type is awful to read in the IDE
 
 // For instance ==>
-// type Merge2<TUnion> = CommonValues<TUnion> & NonCommonValues<TUnion>;
+// type Merge2<TUnion> = CommonValues<TUnion> & NonCommons<TUnion>;
 
 // type Test = Merge<A>;
 // type Test1 = Merge2<A>;
@@ -111,26 +111,7 @@ export type Merge<TUnion> = Values<
 // //     d?: string;
 // // }
 // let t2: Test1;
-// // type Test1 = CommonValues<A> & NonCommonValues<A>
+// // type Test1 = CommonValues<A> & NonCommons<A>
 
 // t.a; // (property) a?: string | number
 // t2.a; // (property) a?: string | number
-
-
-
-/* type V = { c: { c1: 1; }; } |
-{ c: { c2: 2; }; } |
-{ d: 'd'; } |
-{ a: 1; };
-
-type Test = Merge<V>;
-type Test = {
-    d?: "d";
-    c?: {
-        c1: 1;
-    } | {
-        c2: 2;
-    };
-    a?: 1;
-}
- */
