@@ -1,7 +1,7 @@
-import { Levels } from './useful';
+import { ExcludeExact, Levels } from './useful';
 
-type IsRecrusivable<T> = never |
-    T extends (RegExp | Date) ? false :
+type IsRecursivable<T> = never |
+    T extends (RegExp | Date | Promise<any>) ? false :
     T extends (...args: any[]) => any ? false :
     T extends unknown[] ? true :
     T extends object ? true :
@@ -24,7 +24,7 @@ type NonCommonKeys<T> = Exclude<Keys<T>, CommonKeys<T>>;
 // Here, T appears in the [ K in CommmonKeys<T> ] first, so we have to put the trick before leading to this ugly syntax CommonKeys<T> extends infer K1 ... to avoid 
 // distribution !! :)))
 type Common<T, Depth extends number> = CommonKeys<T> extends infer K1 ? {
-    [ K in K1 & CommonKeys<T> ]: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ], Depth> : T[ K ]
+    [ K in K1 & CommonKeys<T> ]: IsRecursivable<T[ K ]> extends true ? MergeReduce<T[ K ], Depth> : T[ K ]
 } : never;
 
 type NonCommonValue<T, K extends PropertyKey> = T extends Partial<Record<K, infer V>> ? keyof T extends never ? never : V : never;
@@ -32,7 +32,7 @@ type NonCommonValue<T, K extends PropertyKey> = T extends Partial<Record<K, infe
 
 type NonCommon<T, Depth extends number> = NonCommonKeys<T> extends infer K1 ? {
     // NonCommon properties must be optional as their are not in every type of the union
-    [ K in K1 & NonCommonKeys<T> ]?: IsRecrusivable<T[ K ]> extends true ? MergeReduce<T[ K ], Depth> : NonCommonValue<T, K>
+    [ K in K1 & NonCommonKeys<T> ]?: IsRecursivable<T[ K ]> extends true ? MergeReduce<T[ K ], Depth> : NonCommonValue<T, K>
 } : never;
 
 
@@ -49,9 +49,8 @@ type UnionFuncParamToIntersection<U> = UnionToFuncParam<U> extends ((k: infer I)
 type ExtractFuncParm<F> = F extends { (a: infer A): void; } ? A : never;
 
 // the built-in type Exclude<T, U> = T extends U ? never : T is not adapted for us because
-// if A = { a:1 } | { a:1; b:2 } => Exclude<A, { a:1 }> == never
-// we need ExcludeExact<A, { a:1}> == { a:1; b:2 }
-type ExcludeExact<T, U> = T extends U ? U extends T ? never : T : T;
+// if A = { a: 1; } | { a: 1; b: 2; } => Exclude<A, { a: 1 }> == never
+// ExcludeExact<A, { a: 1; }> == { a: 1; b: 2; } ===> excludes the "exact" type from a union
 type SpliceOne<Union> = ExcludeExact<Union, ExtractOne<Union>>;
 type ExtractOne<Union> = ExtractFuncParm<UnionFuncParamToIntersection<UnionToFuncParam<Union>>>;
 

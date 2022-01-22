@@ -186,3 +186,11 @@ export type CamelCase<S> = S extends `${infer Char}-${infer Rest}`
 
 declare const NotDefinedSymbol: unique symbol;
 export type NotDefined = typeof NotDefinedSymbol;
+
+
+// the built-in type Exclude<T, U> = T extends U ? never : T ===> excludes all sub-types of U
+// if A = { a: 1; } | { a: 1; b: 2; } => Exclude<A, { a: 1 }> == never
+// ExcludeExact<A, { a: 1; }> == { a: 1; b: 2; } ===> excludes the "exact" type from a union
+export type ExcludeExact<T, U> = T extends U ? U extends T ? never : T : T;
+
+export type ExtractExact<T, U> = T extends U ? U extends T ? T : never : never;
