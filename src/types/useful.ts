@@ -1,6 +1,9 @@
 export type Key = string | number | symbol;
 export type Prop = Key;
+
+// nice picture on https://www.tektutorialshub.com/typescript/typescript-data-types/
 export type NonObject = string | number | bigint | symbol | boolean | Function | RegExp;
+export type Primitive = NonObject;
 
 export type RecordOf<T = any> = Record<Key, T>;
 
