@@ -1,5 +1,5 @@
 import type { TT$ } from './types';
-import { arrayN, composeLeft } from './useful';
+import { arrayN } from './useful';
 
 
 export type ChainedFunc<T> = (value: T, i?: number) => TT$<T>;
@@ -49,14 +49,14 @@ export const callTimeout = <R, O extends CallTimeoutOptions>(func: () => R, opti
 };
 
 
-export const compose$ = <FN extends (arg: any) => TT$<any>, V extends Parameters<FN>[ 0 ] = Parameters<FN>[ 0 ], R = ReturnType<FN>>(functions: FN[], value: V): Promise<Awaited<R>> => {
+/* export const compose$ = <FN extends (arg: any) => TT$<any>, V extends Parameters<FN>[ 0 ] = Parameters<FN>[ 0 ], R = ReturnType<FN>>(functions: FN[], value: V): Promise<Awaited<R>> => {
     return composeLeft(functions.map(f => async (...args: any[]) => {
         if (args.length === 1 && args[ 0 ] instanceof Promise)
             return f(await args[ 0 ]);
 
         return f.apply(null, args);
     }), value);
-};
+}; */
 
 /* console.time('chrono');
 
