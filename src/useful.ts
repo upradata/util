@@ -37,7 +37,20 @@ const f: F = 'test';
 
 const ff = ensureFunction(f as F); */
 
-export const arrayN = <T = any>(n: number, fill: T = undefined): T[] => Array(n).fill(fill);
+type Filler<T> = (i: number) => T;
+export const arrayN = <T = any>(n: number, fill: T | Filler<T> = undefined): T[] => {
+    const filler: Filler<T> = typeof fill === 'function' ? fill as Filler<T> : _i => fill;
+
+    const create = (array: T[], i: number): T[] => {
+        if (i === n)
+            return array;
+
+        return create([ ...array, filler(i) ], i + 1);
+    };
+
+    return create([], 0);
+};
+
 
 
 

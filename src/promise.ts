@@ -8,6 +8,8 @@ export const chained$ = <T>(functions: ChainedFunc<T>[], init: T = undefined): P
     return functions.reduce((current, func, i) => current.then(v => func(v, i)), Promise.resolve(init));
 };
 
+export const composed$ = chained$;
+
 export const repeatChained$ = <T>(func: ChainedFunc<T>, n: number, init: T = undefined): Promise<T> => {
     return chained$(arrayN(n).map(_i => func), init);
 };
