@@ -52,6 +52,9 @@ export class PromisePool<T = unknown> {
                 // result in order
                 res([ ...this.result.values() ]);
             };
+
+            if (this.queue.length === 0 && this.i === this.result.size - 1)
+                this.resolve();
         });
     }
 }
