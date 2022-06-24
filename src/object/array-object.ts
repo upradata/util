@@ -7,8 +7,11 @@ import { arrayFromIterable } from '../useful';
 // toObject([ { key: 'a', v: 1 }, { key: 'b', v: 2 }, { key: 'a', v: 3 } ], 'key', 'array') => { a: [ { key: 'a', v: 1 }, { key: 'a', v: 3 } ], b: [ { key: 'b', v: 2 } ] };
 
 
+// eslint-disable-next-line max-len
 // export const toObject = <O extends RecordOf<any>, K extends keyof O, M extends 'value' | 'array' = 'array'>(array: O[] | Readonly<O[]>, key: K, mode: M = 'value' as M): { [ /// Key in O[ K ] ]: M extends 'value' ? O : O[] } => {
-export const toObject = <O extends RecordOf<any>, K extends keyof O, M extends 'value' | 'array' = 'value'>(it: Iterable<O>, key: K, mode: M = 'value' as M): { [ Key in O[ K ] ]: M extends 'value' ? O : O[] } => {
+export const toObject = <O extends RecordOf<any>, K extends keyof O, M extends 'value' | 'array' = 'value'>(
+    it: Iterable<O>, key: K, mode: M = 'value' as M
+): { [ Key in O[ K ] ]: M extends 'value' ? O : O[] } => {
     return arrayFromIterable(it).reduce((o, curr) => {
         const k = curr[ key ];
         o[ k ] = mode === 'value' ? curr : [ ...(o[ k ] || []), curr ] as any;
@@ -26,7 +29,7 @@ type KeyOf<T> = InferRecordType<T> extends {} ? keyof T : T;
 
 export class ToArrayOptions<T extends {}> {
     onlyValues?: boolean = false;
-    filter?: (key: keyof T, value?: T[ keyof T ]) => boolean = (k, v) => true;
+    filter?: (key: keyof T, value?: T[ keyof T ]) => boolean = (_k, _v) => true;
     keyName?: Key = 'key';
 }
 
@@ -42,14 +45,13 @@ export function toArray<T extends {}, O extends ToArrayOptions<T>>(o: T, options
     const { onlyValues, filter, keyName } = Object.assign(new ToArrayOptions(), options) as ToArrayOptions<any>;
 
     return Object.entries(o).filter(([ k, v ]) => filter(k, v)).map(([ k, v ]) => {
-        const value = typeof v === 'object' ? v : { value: v };
-
         if (onlyValues)
             return v as any;
 
+        const value = typeof v === 'object' ? v : { value: v };
         return { [ keyName ]: k, ...value };
     });
-};
+}
 
 
 /* const a = toArray({ a: { k1: 1, k2: 2 }, b: { k1: 3, k2: 4 } } as const, { keyName: 'id', filter: (k, v) => k === 'a' });

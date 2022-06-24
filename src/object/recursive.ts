@@ -1,7 +1,7 @@
 import { isDefined, isPlainObject } from '../is';
 import { Key } from '../types';
 import { entries } from './access';
-import { ConcatenatedKeysRecursive } from './recursive.type';
+import { ConcatenatedKeysRecursive, FlatKeys, Get } from './recursive.type';
 
 
 /* const o = {
@@ -44,7 +44,7 @@ export const keysRecursive = <O extends {}>(o: O, option?: FlattenObjectOption):
         }) as any;
     }; */
 
-    const keys = (o: {}): ConcatenatedKeysRecursive<O> => {
+    const keys = (o: {}): string[] => {
         return entries(o).flatMap(([ k, v ], level) => {
             if (isPlainObject(v) && level + 1 !== nbLevels)
                 return keys(v).map(key => mergeKeys(k, key));
@@ -53,7 +53,7 @@ export const keysRecursive = <O extends {}>(o: O, option?: FlattenObjectOption):
         }) as any;
     };
 
-    return keys(o);
+    return keys(o) as any;
 };
 
 
@@ -61,23 +61,31 @@ export const keysRecursive = <O extends {}>(o: O, option?: FlattenObjectOption):
 // props = a.b.c.d for instance
 // getRecursive(o, props) => get o.a.b.c.d
 // if prop does not exist, return undefined
-export const getRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<O> | string) => {
-    return typeof key === 'string' ? (key as string).split('.').reduce((obj, p) => obj?.[ p ], o) : o[ key as any ];
+export const getRecursive = <O extends {}, Keys extends FlatKeys<O, 6>>(o: O, key: {} extends O ? Key : Keys): {} extends O ? any : Get<O, Keys, 6> => {
+    // @ts-ignore
+    const k = key as any as string;
+    return typeof k === 'string' ? k.split('.').reduce((obj, p) => obj?.[ p ], o) : o[ k ];
 };
 
+// const t = getRecursive({}, 'b.a');
+// const t = getRecursive({ a: 1, b: { b1: { b2: 2 } } }, 'b' as const);
 
 // setRecursive(o, props, value) sets o.a.b.c.d = value
 // if a prop does not exist, it is created as {}
-export const setRecursive = <O extends {}>(o: O, key: ConcatenatedKeysRecursive<O> | string, value: any): O => {
-    if (typeof key === 'string') {
+export const setRecursive = <O extends {}, Keys extends FlatKeys<O, 6>>(o: O, key: {} extends O ? Key : Keys, value: {} extends O ? any : Get<O, Keys, 6>): O => {
+    // @ts-ignore
+    const k = key as string;
 
-        (key as string).split('.').reduce((obj, p, i, arr) => {
+    if (typeof k === 'string') {
+
+        k.split('.').reduce((obj, p, i, arr) => {
             obj[ p ] = i === arr.length - 1 ? value : obj[ p ] || {};
             return obj[ p ];
         }, o);
 
     } else {
-        o[ key as any ] = value;
+        // @ts-ignore
+        o[ k ] = value;
     }
 
     return o;

@@ -1,13 +1,13 @@
 import { ifthen } from '../ifthen';
 import { isDefinedProp, isPlainObject } from '../is';
-import { Key, OmitType, ValueOf, Arr } from '../types';
+import { OmitType, ValueOf, Arr } from '../types';
 
 import { entries, fromEntries } from './access';
 import { KeysRecursive, PrimitiveRecursive } from './recursive.type';
 
 
-export type ObjectFilter<V> = (k: Key, v: V) => boolean;
-export const filter = <O extends {}>(o: O, filter: ObjectFilter<ValueOf<O>>): O => fromEntries(entries(o).filter(([ k, v ]) => filter(k, v)));
+export type ObjectFilter<O> = (k: keyof O, v: ValueOf<O>) => boolean;
+export const filter = <O extends {}>(o: O, filter: ObjectFilter<O>): O => fromEntries(entries(o).filter(([ k, v ]) => filter(k, v)));
 
 // removeUndefined({ a: 1, b: 2, c: undefined as undefined, d: 2 }); => { a: 1, b: 2, d: 2; }
 export const removeUndefined = <O extends {}>(o: O): OmitType<O, undefined> => filter(o, (_, v) => typeof v !== 'undefined');

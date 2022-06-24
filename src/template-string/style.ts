@@ -16,7 +16,7 @@ export class StyleOptions {
 }
 
 
-const flatMap = (arr: any[]) => arr.reduce((a, v) => a.concat(Array.isArray(v) ? flatMap(v) : v), []);
+// const flatMap = (arr: any[]) => arr.reduce((a, v) => a.concat(Array.isArray(v) ? flatMap(v) : v), []);
 
 export class Style {
     static get [ Symbol.species ]() { return Style; }
@@ -51,11 +51,11 @@ export class Style {
     }
 
     private getTransforms(level: number = 0): Array<{ mode: StyleMode; transform: StyleTransform; }> {
-        const transforms = flatMap(this.transforms.map(tr => {
+        const transforms = /* flatMap( */this.transforms.flatMap(tr => {
             if (tr instanceof Style) return tr.getTransforms(level + 1);
             if (typeof tr === 'function') return { mode: this.mode || 'null' as const, transform: tr };
             return tr;
-        }));
+        }); // );
 
         const setMode = (t: { mode: StyleMode; transform: StyleTransform; }, i: number) => {
 
@@ -81,7 +81,7 @@ export class Style {
     add(...transforms: StyleOptions[ 'transforms' ]): Style {
         this.transforms = [ ...this.transforms, ...transforms ];
         return this;
-    };
+    }
 
     copy<T>(): T {
         return new this.constructor[ Symbol.species ](this);
@@ -89,7 +89,7 @@ export class Style {
 
     get p() {
         return '';
-    };
+    }
 
     get $() {
         return this.styleTemplate();

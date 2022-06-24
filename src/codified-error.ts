@@ -1,18 +1,20 @@
 export interface CodifiedErrorArgs<ErrorsEnum> {
-    code: ErrorsEnum;
-    message: string;
+    code?: ErrorsEnum;
+    message?: string;
     name?: string;
     details?: any;
     list?: CodifiedError<any>[];
 }
 
+export type ErrorKeys = keyof Error | keyof CodifiedErrorArgs<any>;
+
 
 export class CodifiedError<ErrorsEnum = string> extends Error {
-    code: ErrorsEnum;
+    code?: ErrorsEnum;
     details?: any;
-    list?: CodifiedError<any>[];
+    list: CodifiedError<any>[] = [];
 
-    constructor(args: CodifiedErrorArgs<ErrorsEnum>) {
+    constructor(args: CodifiedErrorArgs<ErrorsEnum> = {}) {
         // https://github.com/Microsoft/TypeScript-wiki/blob/master/Breaking-Changes.md#extending-built-ins-like-error-array-and-map-may-no-longer-work
         // https://stackoverflow.com/questions/41102060/typescript-extending-error-class
         /*
@@ -24,31 +26,50 @@ export class CodifiedError<ErrorsEnum = string> extends Error {
         */
 
         // 'Error' breaks prototype chain here
-        super(args.message);
+        super(args.message || '');
 
         // restore prototype chain
         const actualProto = new.target.prototype;
 
-        if (Object.setPrototypeOf) { Object.setPrototypeOf(this, actualProto); }
-        else { (this as any).__proto__ = actualProto; }
-
-        this.message = args.message;
-        this.code = args.code;
-        this.name = args.name || this.constructor.name;
-        this.details = args.details;
-        this.list = args.list;
-    }
-
-    copy(keyFilter: (k: string) => boolean) {
-        const o = {};
-
-        // Apparently message is not loopable (even if I put the property inside the child class!!!)
-        for (const [ k, v ] of [ ...Object.entries(this), [ 'message', this.message ] ]) {
-            if (keyFilter(k) && v)
-                o[ k ] = v;
+        if (Object.setPrototypeOf)
+            Object.setPrototypeOf(this, actualProto);
+        else {
+            // eslint-disable-next-line no-proto
+            (this as any).__proto__ = actualProto;
         }
 
-        return o;
+        // Capture stack trace
+        if (!this.stack) {
+            Error.captureStackTrace(this, this.constructor);
+        }
+
+        Object.assign(this, { name: this.constructor.name } as Partial<CodifiedErrorArgs<ErrorsEnum>>, args);
+    }
+
+    copy(keyFilter: (k: ErrorKeys) => boolean) {
+
+        // Apparently message is not loopable (even if I put the property inside the child class!!!)
+        return [ ...Object.entries(this), [ 'message', this.message ] ]
+            .filter(([ k, v ]) => keyFilter(k as ErrorKeys) && v)
+            .reduce((o, [ k, v ]) => ({ ...o, [ k ]: v }), {});
+    }
+
+    toString(withStack: boolean = false) {
+        const message = (e: CodifiedError) => {
+            const code = e.code ? `code: ${e.code}` : '';
+            const details = e.details ? `details: ${typeof e.details === 'object' ? JSON.stringify(e.details) : e.details}` : '';
+            const message = e.message ? `message: ${e.message}` : '';
+            const stack = e.stack && withStack ? e.stack : '';
+
+            return [ code, message, details, stack ].filter(s => s !== '').join('\n');
+        };
+
+        const walkErrors = (e: CodifiedError<any>, str: string): string => {
+            const messageReducer = [ str, message(e) ].filter(s => s !== '').join('\n');
+            return e.list.reduce((s, err) => walkErrors(err, s), messageReducer);
+        };
+
+        return walkErrors(this, '');
     }
 }
 

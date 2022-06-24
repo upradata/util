@@ -1,5 +1,3 @@
-export const EMAIL_REGEXP = /^[-!#$%&'*+\/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+\/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
-
 export const regexToString = (r: string | RegExp) => typeof r === 'string' ? r : r.source;
 export const stringToRegex = (r: string | RegExp, flags?: string) => typeof r === 'string' ? new RegExp(r, flags) : r;
 /* export const mergeRegexes = (...regexes: (RegExp | string)[]) => new RegExp(regexes.map(r => `(${regexToString(r)})`).join('|'));
@@ -26,3 +24,8 @@ export const mergeRegexes = (regexes: (RegExp | string)[], options: MergeRexesOp
         flags
     );
 };
+
+
+
+export const EMAIL_REGEXP = /^[-!#$%&'*+\/0-9=?A-Z^_`a-z{|}~]+(\.[-!#$%&'*+\/0-9=?A-Z^_`a-z{|}~]+)*@[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?(\.[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$/;
+export const EMAIL_REGEXP_WITH_BRACKETS = mergeRegexes([ /^\s*((\S+\s+)+)?/, '<', regexToString(EMAIL_REGEXP).slice(1, -1), />$/ ]);

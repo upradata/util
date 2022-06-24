@@ -24,12 +24,16 @@ export const values = <T extends RecordOf<any>>(o: T) => Object.values(o) as Arr
 // fromKey(arr, 'key' as const, 'a' as const);
 
 // => { key: 'a', v: 1; }
-// 
-export const fromKey = <O extends {}, K extends keyof O, V extends O[ K ]>(it: Iterable<O>, key: K, value: V): Extract<O, Record<K, V>> => arrayFromIterable(it).find(el => el[ key ] === value) as any;
+//
+export const fromKey = <O extends {}, K extends keyof O, V extends O[ K ]>(it: Iterable<O>, key: K, value: V): Extract<O, Record<K, V>> => {
+    return arrayFromIterable(it).find(el => el[ key ] === value) as any;
+};
 
 export const findFromKey = fromKey;
 
 // fromKeyAll(arr, 'key' as const, 'a' as const); => [ { key: 'a', v: 1; }, { key: 'a', v: 3; } ]
-export const fromKeyAll = <O extends {}, K extends keyof O, V extends O[ K ]>(it: Iterable<O>, key: K, value: V): Extract<O, Record<K, V>>[] => arrayFromIterable(it).filter(el => el[ key ] === value) as any;
+export const fromKeyAll = <O extends {}, K extends keyof O, V extends O[ K ]>(it: Iterable<O>, key: K, value: V): Extract<O, Record<K, V>>[] => {
+    return arrayFromIterable(it).filter(el => el[ key ] === value) as any;
+};
 
 export const findFromKeyAll = fromKeyAll;
