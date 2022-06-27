@@ -1,4 +1,3 @@
-import { AssignOptions, assignRecursive } from './assign';
 import type { Constructor } from './function';
 import { isArray, isDefined, isPromise } from './is';
 import type { Key, InferArrayType, Arr, TT, TT$ } from './types';
@@ -91,9 +90,6 @@ firstTruthy([ false, undefined, () => 'bonjour', 2 ]) === 'bonjour'; */
 
 
 export const arrayFromIterable = <T>(it: Iterable<T>): T[] => Array.isArray(it) ? it : [ ...it ];
-
-
-export const deepCopy = <O extends {}>(o: O, options?: AssignOptions): O => assignRecursive({}, o, options) as any as O;
 
 
 export interface PollOptions {

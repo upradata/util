@@ -93,10 +93,7 @@ export type PickTypeWithNever<O, T> = {
 };
 
 
-
 export type ToString = { toString(): string; };
-
-export type TupleSize<T extends Arr<any>> = T extends { length: infer N; } ? N : never;
 
 
 
