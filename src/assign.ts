@@ -150,7 +150,7 @@ class Assign {
         const { assignMode, arrayMode, depth, nonRecursivelyAssignableTypes } = this.options;
 
         const to = isObjectOrArray(out) ? out : {};
-        const outIsPrimitive = fromPrimitive || isObjectOrArray(out);
+        const outIsPrimitive = fromPrimitive || !isObjectOrArray(out);
 
         const isRecAssignable = (v: any) => ![ ...nonRecursivelyAssignableTypes ].some(ctor => v instanceof ctor);
         /*  typeof v === type || */ /* v.constructor === type */
@@ -164,7 +164,7 @@ class Assign {
 
                 if ((assignMode === 'of' && hasOwnProperty(inn, prop) || assignMode === 'in')) {
 
-                    const isPropPrimitive = fromPrimitive || isObjectOrArray(to[ prop ]);
+                    const isPropPrimitive = fromPrimitive || !isObjectOrArray(to[ prop ]);
 
                     // recursion
                     if (isObjectOrArray(inn[ prop ]) && !this.lastLevel() && isRecAssignable(inn[ prop ])) { // array also
@@ -191,7 +191,7 @@ class Assign {
                                 () => new Assign(
                                     isObjectOrArray(to[ prop ]) ? to[ prop ] : defaultTo, [ inn[ prop ] ],
                                     options
-                                ).assignRecursive(currentLevel + 1, outIsPrimitive || isObjectOrArray(to[ prop ])),
+                                ).assignRecursive(currentLevel + 1, outIsPrimitive || !isObjectOrArray(to[ prop ])),
                                 isPropPrimitive
                             );
                         }

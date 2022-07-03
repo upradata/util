@@ -1,3 +1,4 @@
+/* eslint-disable no-redeclare */
 import { Constructor, AnyFunction } from '../function';
 import { ValueOf, Arr, Key } from '../types';
 
@@ -47,8 +48,9 @@ export function makeObject(arg: Key[] | object | Constructor, value: (k: Key, va
     return keys.reduce((o, k) => {
         const r = Array.isArray(arg) ? value(k, arg) : value(k, arg[ k ], arg);
 
-        const key = r.key || k;
-        const v = r.key ? r.value : r;
+        // r can be undefined | null !!
+        const key = r?.key || k;
+        const v = r?.key ? r.value : r;
 
         o[ key ] = v;
         return o;
