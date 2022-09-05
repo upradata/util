@@ -164,7 +164,7 @@ class Assign {
 
                 if ((assignMode === 'of' && hasOwnProperty(inn, prop) || assignMode === 'in')) {
 
-                    const isPropPrimitive = fromPrimitive || !isObjectOrArray(to[ prop ]);
+                    const isPropPrimitive = fromPrimitive || (prop in to) && !isObjectOrArray(to[ prop ]);
 
                     // recursion
                     if (isObjectOrArray(inn[ prop ]) && !this.lastLevel() && isRecAssignable(inn[ prop ])) { // array also

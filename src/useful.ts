@@ -1,6 +1,6 @@
 import type { Constructor } from './function';
 import { isArray, isDefined, isPromise } from './is';
-import type { Key, InferArrayType, Arr, TT, TT$ } from './types';
+import type { Key, InferArrayType, Arr, TT$ } from './types';
 
 // chain(() => o.a.b.c) ==> if a prop doesn't exist ==> return defaultValue
 // Now it is not necessary anymore with o?.a syntax
@@ -19,7 +19,11 @@ export function isErrorOf(e: any, errorCtor: Constructor) {
     return e instanceof errorCtor || e.constructor === errorCtor || e.name === errorCtor.name;
 }
 
-export function ensureArray<T extends TT<any>>(v: T): T extends Arr<any> ? T : T[] {
+/* export function ensureArray<T extends TT<any>>(v: T): T extends Arr<any> ? T : T[] {
+    return (isArray(v) ? v : isDefined(v) ? [ v ] : []) as any;
+} */
+
+export function ensureArray<T>(v: T): T extends Arr<any, 'readonly'> ? T : T[] {
     return (isArray(v) ? v : isDefined(v) ? [ v ] : []) as any;
 }
 
