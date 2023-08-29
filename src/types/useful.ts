@@ -170,18 +170,39 @@ export type Numbers = '0' | '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';
 
 // https://ghaiklor.github.io/types-challenges-solutions/en/medium-kebabcase.html
 // S extends `${infer C}${infer T}` allows to get the [head, tail] with head=first letter and tail=the rest :))
-export type KebabCase<S> = S extends `${infer Char}${infer Rest}`
+// export type KebabCase<S> = S extends `${infer Char}${infer Rest}`
+//     // 2 cases: 1) rest=ab... 2) we have rest=Ab....
+//     ? Rest extends Uncapitalize<Rest> ? `${Uncapitalize<Char>}${KebabCase<Rest>}` : `${Uncapitalize<Char>}-${KebabCase<Rest>}`
+//     : S;
+
+
+type TrimStart<S> = S extends `${infer Char}${infer Rest}`
+    ? Char extends ' ' ? TrimStart<Rest> : S :
+    S;
+
+// type TestTrimStart = TrimStart<'      ABC'>;
+
+// Better version handling more input in camle case and white spaces (trim also at start and end)
+export type KebabCase<S, R extends string = ''> = S extends `${infer Char}${infer Rest}`
+    ? Char extends ' ' ? TrimStart<S> extends infer TrimS ? TrimS extends '' ? R : KebabCase<TrimS, R extends '' ? R : `${R}-`> : never :
     // 2 cases: 1) rest=ab... 2) we have rest=Ab....
-    ? Rest extends Uncapitalize<Rest> ? `${Uncapitalize<Char>}${KebabCase<Rest>}` : `${Uncapitalize<Char>}-${KebabCase<Rest>}`
-    : S;
+    Rest extends Uncapitalize<Rest> ? KebabCase<Rest, `${R}${Uncapitalize<Char>}`> : KebabCase<Rest, `${R}${Uncapitalize<Char>}-`>
+    : R;
+
+// type S1 = KebabCase<'testTheCamelCase'>;
+// type S2 = KebabCase<'    testTheCamelCase   '>;
+// type S3 = KebabCase<'test    The   camel   Case'>;
+// type S4 = KebabCase<'    test    The   camel   Case   '>;
+// type S5 = KebabCase<'  test-the-camel-case  '>;
+
 
 // https://ghaiklor.github.io/types-challenges-solutions/en/medium-camelcase.html
 export type CamelCase<S> = S extends `${infer Char}-${infer Rest}`
     ? Rest extends Capitalize<Rest> ? `${Char}-${CamelCase<Rest>}` : `${Char}${CamelCase<Capitalize<Rest>>}`
     : S;
 
-// type S = KebabCase<'testTheCamelCase'>;
-// type S = KebabCase<'test-the-camel-case'>;
+// type S = CamelCase<'testTheCamelCase'>;
+// type S = CamelCase<'test-the-camel-case'>;
 
 
 declare const NotDefinedSymbol: unique symbol;

@@ -79,7 +79,8 @@
             "@upradata/tilda-stencil-components": "/home/milottit/Libraries/Tilda/stencil-components",
             "caca": "/home/milottit/CACA",
             "upradata-fiscalite": "/home/milottit/Projects/Accounting",
-            "@upradata/green-star": "/home/milottit/Projects/green-star"
+            "@upradata/green-star": "/home/milottit/Projects/green-star",
+            "@upradata/carla-apartments-website": "/home/milottit/Projects/UpraData/Clients/Carla-Colombi"
         }
     }
 }
