@@ -1,50 +1,51 @@
-import { keys, makeObject } from '../../src/useful';
-import { buildStyle, DefinedStringTransforms, recreateString, Styles, StyleTransform, styles as s } from '../../src/template-string';
-import { PickType } from '../../src/type';
+import { keys, makeObject } from '../../src/object';
+import { buildStyle, DefinedStringTransforms, Styles, StyleTransform, styles as s } from '../../src/template-string';
+import type { PickType } from '../../src/types';
 
 export class Colors<T = any> {
-    none: T = undefined;
-    reset: T = undefined;
-    bold: T = undefined;
-    dim: T = undefined;
-    italic: T = undefined;
-    underline: T = undefined;
-    inverse: T = undefined;
-    hidden: T = undefined;
-    strikethrough: T = undefined;
-    black: T = undefined;
-    red: T = undefined;
-    green: T = undefined;
-    yellow: T = undefined;
-    blue: T = undefined;
-    magenta: T = undefined;
-    cyan: T = undefined;
-    white: T = undefined;
-    gray: T = undefined;
-    grey: T = undefined;
-    bgBlack: T = undefined;
-    bgRed: T = undefined;
-    bgGreen: T = undefined;
-    bgYellow: T = undefined;
-    bgBlue: T = undefined;
-    bgMagenta: T = undefined;
-    bgCyan: T = undefined;
-    bgWhite: T = undefined;
-    blackBG: T = undefined;
-    redBG: T = undefined;
-    greenBG: T = undefined;
-    yellowBG: T = undefined;
-    blueBG: T = undefined;
-    magentaBG: T = undefined;
-    cyanBG: T = undefined;
-    whiteBG: T = undefined;
+    none: T = undefined as T;
+    reset: T = undefined as T;
+    bold: T = undefined as T;
+    dim: T = undefined as T;
+    italic: T = undefined as T;
+    underline: T = undefined as T;
+    inverse: T = undefined as T;
+    hidden: T = undefined as T;
+    strikethrough: T = undefined as T;
+    black: T = undefined as T;
+    red: T = undefined as T;
+    green: T = undefined as T;
+    yellow: T = undefined as T;
+    blue: T = undefined as T;
+    magenta: T = undefined as T;
+    cyan: T = undefined as T;
+    white: T = undefined as T;
+    gray: T = undefined as T;
+    grey: T = undefined as T;
+    bgBlack: T = undefined as T;
+    bgRed: T = undefined as T;
+    bgGreen: T = undefined as T;
+    bgYellow: T = undefined as T;
+    bgBlue: T = undefined as T;
+    bgMagenta: T = undefined as T;
+    bgCyan: T = undefined as T;
+    bgWhite: T = undefined as T;
+    blackBG: T = undefined as T;
+    redBG: T = undefined as T;
+    greenBG: T = undefined as T;
+    yellowBG: T = undefined as T;
+    blueBG: T = undefined as T;
+    magentaBG: T = undefined as T;
+    cyanBG: T = undefined as T;
+    whiteBG: T = undefined as T;
 }
 
 
 export const colorsTransforms = makeObject(Colors, k => (s: string) => `<${k}>${s}</${k}>`);
 
 const props = keys(new Colors());
-buildStyle(props, colorsTransforms, recreateString);
+
+buildStyle(props, makeObject(props, k => ({ transforms: [ colorsTransforms[ k ] ] })));
 
 export const styles = s as Styles<DefinedStringTransforms & PickType<Colors, StyleTransform>>;
 export const colors = makeObject(Colors, k => styles[ k ].$);

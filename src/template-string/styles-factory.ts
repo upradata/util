@@ -26,7 +26,7 @@ export const buildStyle = (names: Array<string | number>, options: Record<Prop, 
 
 
 export type CommonTagsStringTranform = CommonTagStyle<StyleTransform>;
-export type DefinedStringTransforms = CommonTagsStringTranform /* & OtherClasses if we went to add other transform builders*/;
+export type DefinedStringTransforms = CommonTagsStringTranform /* & OtherClasses if we went to add other transform builders */;
 
 
 export type Styles<AllTransforms> = Style & {
@@ -34,7 +34,9 @@ export type Styles<AllTransforms> = Style & {
 };
 
 
-export const transformToStyleTemplate = (transform: (arg: any) => string) => (strings: TemplateStringsArray, ...keys: ToString[]) => transform(recreateString(strings, ...keys));
+export const transformToStyleTemplate = (transform: (arg: any) => string) => {
+    return (strings: TemplateStringsArray, ...keys: ToString[]) => transform(recreateString(strings, ...keys));
+};
 
 
 const commonTagsKeys = keys(new CommonTagStyle());

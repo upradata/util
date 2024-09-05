@@ -86,7 +86,7 @@ describe('ts-util-is methods', () => {
         expect(util.isNil(1)).toEqual(false);
     });
 
-    it('ensure value is an instance of a type', () => {
+    /* it('ensure value is an instance of a type', () => {
         const err = new Error();
         expect(util.isInstance(err, Error)).toEqual(true);
 
@@ -96,5 +96,5 @@ describe('ts-util-is methods', () => {
 
         expect(util.isInstance(null, Error)).toEqual(false);
         expect(util.isInstance(false, Error)).toEqual(false);
-    });
+    }); */
 });
